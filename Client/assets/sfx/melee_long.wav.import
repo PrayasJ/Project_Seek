@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/melee_long.wav-58f53525e95aab2c7f2ad25dd49610eb.sample"
+
+[deps]
+
+source_file="res://assets/sfx/melee_long.wav"
+dest_files=[ "res://.import/melee_long.wav-58f53525e95aab2c7f2ad25dd49610eb.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=true
+edit/normalize=true
+edit/loop=false
+compress/mode=0
