@@ -13,6 +13,7 @@ var attacking = 0
 export var weapons = ["flashlight", "handgun", "knife", "rifle", "shotgun"]
 export var curr_weapon = 0
 
+signal keyPress(key)
 #melee, knife, rifle, shotgun, handgun
 
 var melee = load("res://assets/sfx/melee.wav")
@@ -44,24 +45,28 @@ func get_input():
 			$player/feet.play("walk" if speed == 250 else  "run")
 			moving = true
 		velocity.x += 1
+		emit_signal("keyPress", "right")
 	if Input.is_action_pressed('ui_left'):
 		if(moving == false):
 			$player.play(weapons[curr_weapon]+"_move")
 			$player/feet.play("walk" if speed == 250 else  "run")
 			moving = true
 		velocity.x -= 1
+		emit_signal("keyPress", "left")
 	if Input.is_action_pressed('ui_up'):
 		if(moving == false):
 			$player.play(weapons[curr_weapon]+"_move")
 			$player/feet.play("walk" if speed == 250 else  "run")
 			moving = true
 		velocity.y -= 1
+		emit_signal("keyPress", "up")
 	if Input.is_action_pressed('ui_down'):
 		if(moving == false):
 			$player.play(weapons[curr_weapon]+"_move")
 			$player/feet.play("walk" if speed == 250 else  "run")
 			moving = true
 		velocity.y += 1
+		emit_signal("keyPress", "down")
 	
 	if Input.is_key_pressed(KEY_1):
 		curr_weapon=0
