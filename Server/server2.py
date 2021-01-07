@@ -8,52 +8,59 @@ logging.basicConfig()
 
 STATE = {"value": 0}
 
-USERS = set()
+USERS = dict()
 
 
-def state_event():
+def move_event():
     return json.dumps({"type": "state", **STATE})
 
+def users_event(ID):
+    return json.dumps({"action": "new_user", "ID": ID,"x":USERS[ID]['x'],"y":USERS[ID]['y']})
 
-def users_event(id):
-    return json.dumps({"type": "new_user", "id": id,"x":len(USERS)*5})
+def users_event_end(ID):
+    return json.dumps({"action": "del_user", "ID": ID})
 
 def reg_ID(ID):
-    return json.dumps({"type":"join", "ID":ID})
+    return json.dumps({"action":"join", "ID":ID,"x":USERS[ID]['x'],"y":USERS[ID]['y']})
 
-async def notify_state():
-    if USERS:  # asyncio.wait doesn't accept an empty list
-        message = state_event()
-        await asyncio.wait([user.send(message) for user in USERS])
+async def move_state(data):
+    id = data['pID']
+    data = json.dumps(data)
+    if len(USERS) > 1:  # asyncio.wait doesn't accept an empty list
+        await asyncio.wait([USERS[user]['ws'].send(data) for user in USERS if user != id])
 
 
-async def notify_users(id):
+async def notify_users(id, ws):
     if len(USERS) > 1:  # asyncio.wait doesn't accept an empty list
         message = users_event(id)
-        await asyncio.wait([user[1].send(message) for user in USERS if user[0] != id])
+        await asyncio.wait([USERS[user]['ws'].send(message) for user in USERS if user != id])
+        await asyncio.wait([ws.send(users_event(user)) for user in USERS if user != id])
 
+async def notify_users_end(id):
+    if len(USERS) > 1:  # asyncio.wait doesn't accept an empty list
+        message = users_event_end(id)
+        await asyncio.wait([USERS[user]['ws'].send(message) for user in USERS if user != id])
 
 async def register(websocket):
     playerId = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-    USERS.add((playerId, websocket))
+    USERS[playerId]= {"ws":websocket,"x":random.randint(-50,50),"y":random.randint(-50,50)}
     await websocket.send(reg_ID(playerId))
-    await notify_users(playerId)
+    await notify_users(playerId, websocket)
 
 
 async def unregister(websocket):
     [USERS.remove(user) for user in USERS if user[1] == websocket]
-    await notify_users()
+    await notify_users_end([i for i, val in USERS.items() if val['ws'] == websocket][0])
 
 
 async def counter(websocket, path):
     # register(websocket) sends user_event() to websocket
     await register(websocket)
     try:
-        await websocket.send(state_event())
         async for message in websocket:
             data = json.loads(message.decode('UTF-8'))
             if data["action"] == "move":
-                print(data["key"],data["pID"])
+                await move_state(data)
             else:
                 logging.error("unsupported event: {}", data)
     finally:

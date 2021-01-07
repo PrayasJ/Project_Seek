@@ -5,8 +5,7 @@ var otherPlayers = preload("res://otherPlayers.tscn")
 var player = null
 # The URL we will connect to
 export var websocket_url = "ws://127.0.0.1:6789"
-var playerID = null
-var players = []
+var players = {}
 
 # Our WebSocketClient instance
 var _client = WebSocketClient.new()
@@ -35,17 +34,22 @@ func _connected(proto = ""):
 func _on_data():
 	var data = _client.get_peer(1).get_packet().get_string_from_utf8()
 	data = JSON.parse(data).result
-	if data["type"] == "join":
+	if data["action"] == "join":
 		print("Joined with ID" + data["ID"])
-		playerID = data["ID"]
-	if data["type"] == "new_user":
-		players.append(otherPlayers.instance())
-		add_child(players[-1])
+		player.init(data['ID'], data['x'], data['y'])
+	if data["action"] == "new_user":
+		players[data['ID']] = otherPlayers.instance()
+		players[data['ID']].init(data['ID'], data['x'], data['y'])
+		add_child(players[data['ID']])
+		print("New User added")
+	if data["action"] == "move":
+		players[data['pID']].move(data['key'])
 
 func _process(delta):
 	_client.poll()
 
 func KeyPressed(key):
+	var playerID = player.getID()
 	if playerID != null:
-		var data = JSON.print({"action":"move","key":key,"pID":playerID}).to_utf8()
+		var data = JSON.print({"action":"move","key":key,"pID":playerID,'x':player.getx(), 'y':player.gety()}).to_utf8()
 		_client.get_peer(1).put_packet(data)

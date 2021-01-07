@@ -10,6 +10,7 @@ var velocity = Vector2()
 var reload_count = 0
 var attacking = 0
 
+
 export var weapons = ["flashlight", "handgun", "knife", "rifle", "shotgun"]
 export var curr_weapon = 0
 
@@ -26,48 +27,50 @@ var knife = load("res://assets/sfx/knife.wav")
 var reload = load("res://assets/sfx/reload.wav")
 var hit = load("res://assets/sfx/hit.wav")
 
-func _input(event):
-	if event.is_action_pressed('scroll_up'):
-		$Camera2D.zoom = $Camera2D.zoom - Vector2(0.1, 0.1)
-	if event.is_action_pressed('scroll_down'):
-		$Camera2D.zoom = $Camera2D.zoom + Vector2(0.1, 0.1)
+func init(ID, x, y):
+	position.x = x
+	position.y = y
+	id = ID
 
-func get_input():
+func move(key):
 	attacking = false
 	velocity = Vector2()
-	if Input.is_action_just_pressed("run"):
-		speed = 400
-	if Input.is_action_just_released("run"):
-		speed = 250
-	if Input.is_action_pressed('ui_right'):
+	if key =="right":
 		if(moving == false):
 			$player.play(weapons[curr_weapon]+"_move")
 			$player/feet.play("walk" if speed == 250 else  "run")
 			moving = true
 		velocity.x += 1
-		emit_signal("keyPress", "right")
-	if Input.is_action_pressed('ui_left'):
+	if key =="left":
 		if(moving == false):
 			$player.play(weapons[curr_weapon]+"_move")
 			$player/feet.play("walk" if speed == 250 else  "run")
 			moving = true
 		velocity.x -= 1
-		emit_signal("keyPress", "left")
-	if Input.is_action_pressed('ui_up'):
+	if key =="up":
 		if(moving == false):
 			$player.play(weapons[curr_weapon]+"_move")
 			$player/feet.play("walk" if speed == 250 else  "run")
 			moving = true
 		velocity.y -= 1
-		emit_signal("keyPress", "up")
-	if Input.is_action_pressed('ui_down'):
+	if key =="down":
 		if(moving == false):
 			$player.play(weapons[curr_weapon]+"_move")
 			$player/feet.play("walk" if speed == 250 else  "run")
 			moving = true
 		velocity.y += 1
-		emit_signal("keyPress", "down")
-	
+	if velocity != Vector2():
+		dir = velocity
+	$player.rotation= velocity.angle()
+	$CollisionShape2D.rotation = velocity.angle()
+	$CollisionShape2D.rotation_degrees-=90
+	velocity = velocity.normalized() * speed
+
+func get_input():
+	if Input.is_action_just_pressed("run"):
+		speed = 400
+	if Input.is_action_just_released("run"):
+		speed = 250
 	if Input.is_key_pressed(KEY_1):
 		curr_weapon=0
 		$player/torch.position.x = 600
@@ -125,12 +128,6 @@ func get_input():
 		if curr_weapon == 4:
 			reload_count = 10
 		
-	if velocity != Vector2():
-		dir = velocity
-	$player.rotation= velocity.angle()
-	$CollisionShape2D.rotation = velocity.angle()
-	$CollisionShape2D.rotation_degrees-=90
-	velocity = velocity.normalized() * speed
 	
 func hit_sfx():
 	$sfx.set_stream(hit)
@@ -164,7 +161,7 @@ func _physics_process(delta):
 		if $player.animation == i+"_reload" and $player.frame == $player.frames.get_frame_count(i+"_reload")-1 :
 			$player.play(weapons[curr_weapon]+"_idle")
 			moving=false
-	get_input()
+	move('none')
 	if moving == false and $player.animation.split('_', true, 1)[0] != weapons[curr_weapon]:
 		$player.play(weapons[curr_weapon]+'_'+$player.animation.split('_', true, 1)[1])
 	$player.rotation= dir.angle()

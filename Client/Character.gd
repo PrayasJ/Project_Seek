@@ -26,6 +26,20 @@ var knife = load("res://assets/sfx/knife.wav")
 var reload = load("res://assets/sfx/reload.wav")
 var hit = load("res://assets/sfx/hit.wav")
 
+func init(ID, x, y):
+	id = ID
+	position.x = x
+	position.y = y
+
+func getID():
+	return id
+
+func getx():
+	return position.x
+
+func gety():
+	return position.y
+
 func _input(event):
 	if event.is_action_pressed('scroll_up'):
 		$Camera2D.zoom = $Camera2D.zoom - Vector2(0.1, 0.1)
