@@ -98,7 +98,9 @@ async def move_state(data):
     data = json.dumps(data)
     if len(all_user) > 1:  # asyncio.wait doesn't accept an empty list
         await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user if user != id])
-    
+
+async def unregister(websocket):
+    [all_user.remove(user) for user in all_user if user[1] == websocket]
 
 async def counter(websocket, path):
     all_user[data[pID]]= {"ws":websocket,"x":"0","y":"0"}
