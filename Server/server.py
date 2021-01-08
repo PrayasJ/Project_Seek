@@ -5,7 +5,7 @@ import sys
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 server = 'localhost'
-port = 5555
+port = 4201
 
 server_ip = socket.gethostbyname(server)
 
@@ -21,7 +21,7 @@ id_no = 0
 currentId = str(id_no)
 pos = ["0:50,50", "1:100,100"]
 def threaded_client(conn):
-    global currentId, pos
+    global currentId, pos, id_no
     conn.send(str.encode(currentId))
     id_no = id_no + 1
     currentId = str(id_no)
@@ -55,5 +55,5 @@ def threaded_client(conn):
 while True:
     conn, addr = s.accept()
     print("Connected to: ", addr)
-
+    conn.send(str.encode("Hello"))
     start_new_thread(threaded_client, (conn,))
