@@ -1,0 +1,13 @@
+[gd_scene format=2]
+
+[node name="GUI" type="Node2D"]
+
+[node name="Play" type="Button" parent="."]
+margin_left = 230.553
+margin_top = 190.802
+margin_right = 689.553
+margin_bottom = 321.802
+text = "Play"
+__meta__ = {
+"_edit_use_anchors_": false
+}

@@ -19,10 +19,8 @@ var knife = load("res://assets/sfx/knife.wav")
 var reload = load("res://assets/sfx/reload.wav")
 var hit = load("res://assets/sfx/hit.wav")
 
-func init(ID, x, y):
+func init(ID):
 	id = ID
-	position.x = x
-	position.y = y
 
 func getID():
 	return id

@@ -120,11 +120,11 @@ async def counter(websocket, path):
             data = json.loads(message.decode('UTF-8'))
             if data["action"] == "play":
                 await register(websocket, message)
-            if data["action"] == "create":
+            elif data["action"] == "create":
                 await create(websocket, message)
-            if data["action"] == "move":
+            elif data["action"] == "move":
                 await move_state(data)
-            if data["action"] == "join":
+            elif data["action"] == "join":
                 await create(websocket, message)
             else:
                 logging.error("unsupported event: {}", data)
