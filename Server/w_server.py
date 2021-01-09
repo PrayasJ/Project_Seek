@@ -16,29 +16,33 @@ rooms = dict()
 rooms[avb] = {"participants": 0}
 available_room = "room_"+str(avb)+".txt"
 
-async def create(ws):
+async def create(ws, message):
     data = json.loads(message.decode('UTF-8'))
     code = data["code"]
     pid = data["pID"]
     parties[code] = {"participants":1,"p1": ws, "pid1": pid}
 
-async def join(ws):
+async def join(ws, message):
     data = json.loads(message.decode('UTF-8'))
     code = data["code"]
     pid = data["pID"]
+    if code not in parties:
+        data = {"action": "join_error"}
+        data = json.dumps(data)
+        ws.send(data)
     temp = parties[code]["participants"] + 1
     parties[code]["participants"] = temp
     parties[code]["p"+str(temp)] = ws
     parties[code]["pid"+str(temp)] = pid
     for i in range(temp-1):
-        data = {"joined_party": pid}
+        data = {"action": "joined_party", "joined_party": pid}
         data = json.dumps(data)
         parties[code]["p"+str(i+1)].send(data)
-        data = {"joined_party": parties[code]["pid"+str(i+1)]}
+        data = {"action": "joined_party", "joined_party": parties[code]["pid"+str(i+1)]}
         data = json.dumps(data)
         ws.send(data)
 
-async def register(ws):
+async def register(ws, message):
     global avb
     global available_room
     data = json.loads(message.decode('UTF-8'))
@@ -46,14 +50,14 @@ async def register(ws):
         if rooms[avb]["participants"] < nr:
             rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
             rooms[avb]["participants"] = rooms[avb]["participants"] + 1
-            message = {"joined_room": data["pID"]}
+            message = {"action": "joined_room", "joined_room": data["pID"]}
             message = json.dumps(message)
             users = []
             if rooms[avb]["participants"] > 1:
                 for key in rooms[avb].keys():
                     if key != "participants":
                         users.append(key)
-                        data = {"in_room": key}
+                        data = {"action": "in_room", "in_room": key}
                         data = json.dumps(data)
                         await ws.send(data)
                 await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
@@ -68,14 +72,14 @@ async def register(ws):
             for i in range(p):
                 rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
                 rooms[avb]["participants"] = rooms[avb]["participants"] + 1
-                message = {"joined_room": data["pID"]}
+                message = {"action": "joined_room", "joined_room": data["pID"]}
                 message = json.dumps(message)
                 users = []
                 if rooms[avb]["participants"] > 1:
                     for key in rooms[avb].keys():
                         if key != "participants" and key != rooms[avb][data["pID"]]:
                             users.append(key)
-                            data = {"in_room": key}
+                            data = {"action": "in_room", "in_room": key}
                             data = json.dumps(data)
                             await ws.send(data)
                     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
@@ -84,13 +88,13 @@ async def register(ws):
             for i in range(p):
                 rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
                 rooms[avb]["participants"] = rooms[avb]["participants"] + 1
-                message = {"joined_room": data["pID"]}
+                message = {"action": "joined_room", "joined_room": data["pID"]}
                 message = json.dumps(message)
                 if rooms[avb]["participants"] > 0:
                     for key in rooms[avb].keys():
                         if key != "participants" and key != rooms[avb][data["pID"]]:
                             users.append(key)
-                            data = {"in_room": key}
+                            data = {"action": "in_room", "in_room": key}
                             data = json.dumps(data)
                             await ws.send(data)
                     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
@@ -107,7 +111,7 @@ async def unregister(websocket):
 async def counter(websocket, path):
     pID = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
     all_user[pID]= {"ws":websocket,"x":"0","y":"0"}
-    data = {"pID": pID}
+    data = {"action": "sent_pID", "pID": pID}
     data = json.dumps(data)
     await websocket.send(data)
     #all_user[data[pID]]= {"ws":websocket,"x":"0","y":"0"}    
@@ -115,11 +119,13 @@ async def counter(websocket, path):
         async for message in websocket:
             data = json.loads(message.decode('UTF-8'))
             if data["action"] == "play":
-                await register(websocket)
+                await register(websocket, message)
             if data["action"] == "create":
-                await create(websocket)
+                await create(websocket, message)
             if data["action"] == "move":
                 await move_state(data)
+            if data["action"] == "join":
+                await create(websocket, message)
             else:
                 logging.error("unsupported event: {}", data)
     finally:

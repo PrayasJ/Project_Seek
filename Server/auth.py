@@ -1,6 +1,6 @@
-client_id = 375561028410-7tccvqg4aaks56svopgkc0mtqj0jn3qf.apps.googleusercontent.com
-client_secret = LhpL1PuykglkQY6Wu_DnjfG2
-redirect_url = a#url
+client_id = "375561028410-7tccvqg4aaks56svopgkc0mtqj0jn3qf.apps.googleusercontent.com"
+client_secret = "LhpL1PuykglkQY6Wu_DnjfG2"
+redirect_url = "a"#url
 
 authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
 token_url = "https://accounts.google.com/o/oauth2/v2/auth"
