@@ -43,13 +43,13 @@ async def notify_users_end(id):
 
 async def register(websocket):
     playerId = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-    USERS[playerId]= {"ws":websocket,"x":random.randint(-50,50),"y":random.randint(-50,50)}
+    USERS[playerId]= {"ws":websocket,"x":random.randint(-50,50), "y":random.randint(-50,50)}
     await websocket.send(reg_ID(playerId))
     await notify_users(playerId, websocket)
 
 
 async def unregister(websocket):
-    [USERS.remove(user) for user in USERS if user[1] == websocket]
+    await asyncio.wait([USERS.pop(user) for user in USERS if USERS[user]['ws'] == websocket])
     await notify_users_end([i for i, val in USERS.items() if val['ws'] == websocket][0])
 
 

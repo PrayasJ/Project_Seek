@@ -13,11 +13,12 @@ var _client = WebSocketClient.new()
 func _ready():
 	player = Player.instance()
 	add_child(player)
+	add_child(otherPlayers.instance())
 	_client.connect("connection_closed", self, "_closed")
 	_client.connect("connection_error", self, "_closed")
 	_client.connect("connection_established", self, "_connected")
 	_client.connect("data_received", self, "_on_data")
-	player.connect("keyPress", self, "KeyPressed")
+	player.connect("moveplayer", self, "_moveplayer")
 	var err = _client.connect_to_url(websocket_url)
 	if err != OK:
 		print("Unable to connect")
@@ -43,13 +44,13 @@ func _on_data():
 		add_child(players[data['ID']])
 		print("New User added")
 	if data["action"] == "move":
-		players[data['pID']].move(data['key'])
+		players[data['pID']].move(data['x'],data['y'],data['rot'])
 
 func _process(delta):
 	_client.poll()
 
-func KeyPressed(key):
+func _moveplayer(x,y,rot):
 	var playerID = player.getID()
 	if playerID != null:
-		var data = JSON.print({"action":"move","key":key,"pID":playerID,'x':player.getx(), 'y':player.gety()}).to_utf8()
+		var data = JSON.print({"action":"move","pID":playerID,'x':x, 'y':y, 'rot':rot}).to_utf8()
 		_client.get_peer(1).put_packet(data)

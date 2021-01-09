@@ -1,7 +1,6 @@
-[gd_scene load_steps=427 format=2]
+[gd_scene load_steps=429 format=2]
 
 [ext_resource path="res://otherPlayers.gd" type="Script" id=1]
-[ext_resource path="res://assets/light.png" type="Texture" id=2]
 [ext_resource path="res://assets/Player/shotgun/reload/survivor-reload_shotgun_0.png" type="Texture" id=4]
 [ext_resource path="res://assets/Player/shotgun/reload/survivor-reload_shotgun_1.png" type="Texture" id=5]
 [ext_resource path="res://assets/Player/shotgun/reload/survivor-reload_shotgun_2.png" type="Texture" id=6]
@@ -424,8 +423,31 @@
 [ext_resource path="res://assets/Player/feet/run/survivor-run_18.png" type="Texture" id=424]
 [ext_resource path="res://assets/Player/feet/run/survivor-run_19.png" type="Texture" id=425]
 
+[sub_resource type="Shader" id=4]
+code = "shader_type canvas_item;
+
+void fragment() {
+    // Get the vertex color or the color from the texture if set
+    vec4 finalColor = min(texture(TEXTURE, UV), COLOR);
+
+    if(AT_LIGHT_PASS) {
+        // For all fragments in the light we just use the input color
+        COLOR = finalColor;
+    } else {
+        // For all other fragments we make them B&W
+        float value = dot(finalColor.rgb, vec3(0.2125, 0.7154, 0.0721));
+        COLOR = vec4(value, value, value, 1.0);
+    }
+}"
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = SubResource( 4 )
+
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 14.2002, 26.6835 )
+
+[sub_resource type="CanvasItemMaterial" id=6]
+light_mode = 2
 
 [sub_resource type="SpriteFrames" id=2]
 animations = [ {
@@ -434,19 +456,9 @@ animations = [ {
 "name": "shotgun_reload",
 "speed": 30.0
 }, {
-"frames": [ ExtResource( 235 ), ExtResource( 236 ), ExtResource( 237 ), ExtResource( 238 ), ExtResource( 239 ), ExtResource( 240 ), ExtResource( 241 ), ExtResource( 242 ), ExtResource( 243 ), ExtResource( 244 ), ExtResource( 245 ), ExtResource( 246 ), ExtResource( 247 ), ExtResource( 248 ), ExtResource( 249 ) ],
-"loop": false,
-"name": "flashlight_melee",
-"speed": 30.0
-}, {
-"frames": [ ExtResource( 44 ), ExtResource( 45 ), ExtResource( 46 ), ExtResource( 47 ), ExtResource( 48 ), ExtResource( 49 ), ExtResource( 50 ), ExtResource( 51 ), ExtResource( 52 ), ExtResource( 53 ), ExtResource( 54 ), ExtResource( 55 ), ExtResource( 56 ), ExtResource( 57 ), ExtResource( 58 ) ],
-"loop": false,
-"name": "shotgun_melee",
-"speed": 30.0
-}, {
-"frames": [ ExtResource( 79 ), ExtResource( 80 ), ExtResource( 81 ), ExtResource( 82 ), ExtResource( 83 ), ExtResource( 84 ), ExtResource( 85 ), ExtResource( 86 ), ExtResource( 87 ), ExtResource( 88 ), ExtResource( 89 ), ExtResource( 90 ), ExtResource( 91 ), ExtResource( 92 ), ExtResource( 93 ), ExtResource( 94 ), ExtResource( 95 ), ExtResource( 96 ), ExtResource( 97 ), ExtResource( 98 ) ],
+"frames": [ ExtResource( 285 ), ExtResource( 286 ), ExtResource( 287 ), ExtResource( 288 ), ExtResource( 289 ), ExtResource( 290 ), ExtResource( 291 ), ExtResource( 292 ), ExtResource( 293 ), ExtResource( 294 ), ExtResource( 295 ), ExtResource( 296 ), ExtResource( 297 ), ExtResource( 298 ), ExtResource( 299 ), ExtResource( 300 ), ExtResource( 301 ), ExtResource( 302 ), ExtResource( 303 ), ExtResource( 304 ) ],
 "loop": true,
-"name": "shotgun_idle",
+"name": "knife_idle",
 "speed": 30.0
 }, {
 "frames": [ ExtResource( 215 ), ExtResource( 216 ), ExtResource( 217 ), ExtResource( 218 ), ExtResource( 219 ), ExtResource( 220 ), ExtResource( 221 ), ExtResource( 222 ), ExtResource( 223 ), ExtResource( 224 ), ExtResource( 225 ), ExtResource( 226 ), ExtResource( 227 ), ExtResource( 228 ), ExtResource( 229 ), ExtResource( 230 ), ExtResource( 231 ), ExtResource( 232 ), ExtResource( 233 ), ExtResource( 234 ) ],
@@ -454,24 +466,19 @@ animations = [ {
 "name": "rifle_idle",
 "speed": 30.0
 }, {
-"frames": [ ExtResource( 59 ), ExtResource( 60 ), ExtResource( 61 ), ExtResource( 62 ), ExtResource( 63 ), ExtResource( 64 ), ExtResource( 65 ), ExtResource( 66 ), ExtResource( 67 ), ExtResource( 68 ), ExtResource( 69 ), ExtResource( 70 ), ExtResource( 71 ), ExtResource( 72 ), ExtResource( 73 ), ExtResource( 74 ), ExtResource( 75 ), ExtResource( 76 ), ExtResource( 77 ), ExtResource( 78 ) ],
-"loop": true,
-"name": "handgun_move",
+"frames": [ ExtResource( 250 ), ExtResource( 251 ), ExtResource( 252 ), ExtResource( 253 ), ExtResource( 254 ), ExtResource( 255 ), ExtResource( 256 ), ExtResource( 257 ), ExtResource( 258 ), ExtResource( 259 ), ExtResource( 260 ), ExtResource( 261 ), ExtResource( 262 ), ExtResource( 263 ), ExtResource( 264 ) ],
+"loop": false,
+"name": "rifle_melee",
 "speed": 30.0
 }, {
-"frames": [ ExtResource( 155 ), ExtResource( 156 ), ExtResource( 157 ), ExtResource( 158 ), ExtResource( 159 ), ExtResource( 160 ), ExtResource( 161 ), ExtResource( 162 ), ExtResource( 163 ), ExtResource( 164 ), ExtResource( 165 ), ExtResource( 166 ), ExtResource( 167 ), ExtResource( 168 ), ExtResource( 169 ), ExtResource( 170 ), ExtResource( 171 ), ExtResource( 172 ), ExtResource( 173 ), ExtResource( 174 ) ],
+"frames": [ ExtResource( 175 ), ExtResource( 176 ), ExtResource( 177 ), ExtResource( 178 ), ExtResource( 179 ), ExtResource( 180 ), ExtResource( 181 ), ExtResource( 182 ), ExtResource( 183 ), ExtResource( 184 ), ExtResource( 185 ), ExtResource( 186 ), ExtResource( 187 ), ExtResource( 188 ), ExtResource( 189 ), ExtResource( 190 ), ExtResource( 191 ), ExtResource( 192 ), ExtResource( 193 ), ExtResource( 194 ) ],
 "loop": true,
-"name": "knife_move",
+"name": "handgun_idle",
 "speed": 30.0
 }, {
-"frames": [ ExtResource( 195 ), ExtResource( 196 ), ExtResource( 197 ), ExtResource( 198 ), ExtResource( 199 ), ExtResource( 200 ), ExtResource( 201 ), ExtResource( 202 ), ExtResource( 203 ), ExtResource( 204 ), ExtResource( 205 ), ExtResource( 206 ), ExtResource( 207 ), ExtResource( 208 ), ExtResource( 209 ), ExtResource( 210 ), ExtResource( 211 ), ExtResource( 212 ), ExtResource( 213 ), ExtResource( 214 ) ],
-"loop": true,
-"name": "flashlight_idle",
-"speed": 30.0
-}, {
-"frames": [ ExtResource( 135 ), ExtResource( 136 ), ExtResource( 137 ), ExtResource( 138 ), ExtResource( 139 ), ExtResource( 140 ), ExtResource( 141 ), ExtResource( 142 ), ExtResource( 143 ), ExtResource( 144 ), ExtResource( 145 ), ExtResource( 146 ), ExtResource( 147 ), ExtResource( 148 ), ExtResource( 149 ), ExtResource( 150 ), ExtResource( 151 ), ExtResource( 152 ), ExtResource( 153 ), ExtResource( 154 ) ],
-"loop": true,
-"name": "rifle_move",
+"frames": [ ExtResource( 325 ), ExtResource( 326 ), ExtResource( 327 ) ],
+"loop": false,
+"name": "rifle_shoot",
 "speed": 30.0
 }, {
 "frames": [ ExtResource( 99 ), ExtResource( 100 ), ExtResource( 101 ) ],
@@ -479,19 +486,19 @@ animations = [ {
 "name": "handgun_shoot",
 "speed": 30.0
 }, {
-"frames": [ ExtResource( 328 ), ExtResource( 329 ), ExtResource( 330 ), ExtResource( 331 ), ExtResource( 332 ), ExtResource( 333 ), ExtResource( 334 ), ExtResource( 335 ), ExtResource( 336 ), ExtResource( 337 ), ExtResource( 338 ), ExtResource( 339 ), ExtResource( 340 ), ExtResource( 341 ), ExtResource( 342 ) ],
-"loop": false,
-"name": "knife_melee",
-"speed": 30.0
-}, {
-"frames": [ ExtResource( 250 ), ExtResource( 251 ), ExtResource( 252 ), ExtResource( 253 ), ExtResource( 254 ), ExtResource( 255 ), ExtResource( 256 ), ExtResource( 257 ), ExtResource( 258 ), ExtResource( 259 ), ExtResource( 260 ), ExtResource( 261 ), ExtResource( 262 ), ExtResource( 263 ), ExtResource( 264 ) ],
-"loop": false,
-"name": "rifle_melee",
-"speed": 30.0
-}, {
 "frames": [ ExtResource( 132 ), ExtResource( 133 ), ExtResource( 134 ) ],
 "loop": false,
 "name": "shotgun_shoot",
+"speed": 30.0
+}, {
+"frames": [ ExtResource( 59 ), ExtResource( 60 ), ExtResource( 61 ), ExtResource( 62 ), ExtResource( 63 ), ExtResource( 64 ), ExtResource( 65 ), ExtResource( 66 ), ExtResource( 67 ), ExtResource( 68 ), ExtResource( 69 ), ExtResource( 70 ), ExtResource( 71 ), ExtResource( 72 ), ExtResource( 73 ), ExtResource( 74 ), ExtResource( 75 ), ExtResource( 76 ), ExtResource( 77 ), ExtResource( 78 ) ],
+"loop": true,
+"name": "handgun_move",
+"speed": 30.0
+}, {
+"frames": [ ExtResource( 328 ), ExtResource( 329 ), ExtResource( 330 ), ExtResource( 331 ), ExtResource( 332 ), ExtResource( 333 ), ExtResource( 334 ), ExtResource( 335 ), ExtResource( 336 ), ExtResource( 337 ), ExtResource( 338 ), ExtResource( 339 ), ExtResource( 340 ), ExtResource( 341 ), ExtResource( 342 ) ],
+"loop": false,
+"name": "knife_melee",
 "speed": 30.0
 }, {
 "frames": [ ExtResource( 24 ), ExtResource( 25 ), ExtResource( 26 ), ExtResource( 27 ), ExtResource( 28 ), ExtResource( 29 ), ExtResource( 30 ), ExtResource( 31 ), ExtResource( 32 ), ExtResource( 33 ), ExtResource( 34 ), ExtResource( 35 ), ExtResource( 36 ), ExtResource( 37 ), ExtResource( 38 ), ExtResource( 39 ), ExtResource( 40 ), ExtResource( 41 ), ExtResource( 42 ), ExtResource( 43 ) ],
@@ -504,24 +511,9 @@ animations = [ {
 "name": "handgun_melee",
 "speed": 30.0
 }, {
-"frames": [ ExtResource( 325 ), ExtResource( 326 ), ExtResource( 327 ) ],
-"loop": false,
-"name": "rifle_shoot",
-"speed": 30.0
-}, {
-"frames": [ ExtResource( 102 ), ExtResource( 103 ), ExtResource( 104 ), ExtResource( 105 ), ExtResource( 106 ), ExtResource( 107 ), ExtResource( 108 ), ExtResource( 109 ), ExtResource( 110 ), ExtResource( 111 ), ExtResource( 112 ), ExtResource( 113 ), ExtResource( 114 ), ExtResource( 115 ), ExtResource( 116 ) ],
+"frames": [ ExtResource( 195 ), ExtResource( 196 ), ExtResource( 197 ), ExtResource( 198 ), ExtResource( 199 ), ExtResource( 200 ), ExtResource( 201 ), ExtResource( 202 ), ExtResource( 203 ), ExtResource( 204 ), ExtResource( 205 ), ExtResource( 206 ), ExtResource( 207 ), ExtResource( 208 ), ExtResource( 209 ), ExtResource( 210 ), ExtResource( 211 ), ExtResource( 212 ), ExtResource( 213 ), ExtResource( 214 ) ],
 "loop": true,
-"name": "handgun_reload",
-"speed": 30.0
-}, {
-"frames": [ ExtResource( 285 ), ExtResource( 286 ), ExtResource( 287 ), ExtResource( 288 ), ExtResource( 289 ), ExtResource( 290 ), ExtResource( 291 ), ExtResource( 292 ), ExtResource( 293 ), ExtResource( 294 ), ExtResource( 295 ), ExtResource( 296 ), ExtResource( 297 ), ExtResource( 298 ), ExtResource( 299 ), ExtResource( 300 ), ExtResource( 301 ), ExtResource( 302 ), ExtResource( 303 ), ExtResource( 304 ) ],
-"loop": true,
-"name": "knife_idle",
-"speed": 30.0
-}, {
-"frames": [ ExtResource( 175 ), ExtResource( 176 ), ExtResource( 177 ), ExtResource( 178 ), ExtResource( 179 ), ExtResource( 180 ), ExtResource( 181 ), ExtResource( 182 ), ExtResource( 183 ), ExtResource( 184 ), ExtResource( 185 ), ExtResource( 186 ), ExtResource( 187 ), ExtResource( 188 ), ExtResource( 189 ), ExtResource( 190 ), ExtResource( 191 ), ExtResource( 192 ), ExtResource( 193 ), ExtResource( 194 ) ],
-"loop": true,
-"name": "handgun_idle",
+"name": "flashlight_idle",
 "speed": 30.0
 }, {
 "frames": [ ExtResource( 265 ), ExtResource( 266 ), ExtResource( 267 ), ExtResource( 268 ), ExtResource( 269 ), ExtResource( 270 ), ExtResource( 271 ), ExtResource( 272 ), ExtResource( 273 ), ExtResource( 274 ), ExtResource( 275 ), ExtResource( 276 ), ExtResource( 277 ), ExtResource( 278 ), ExtResource( 279 ), ExtResource( 280 ), ExtResource( 281 ), ExtResource( 282 ), ExtResource( 283 ), ExtResource( 284 ) ],
@@ -533,18 +525,48 @@ animations = [ {
 "loop": true,
 "name": "rifle_reload",
 "speed": 30.0
+}, {
+"frames": [ ExtResource( 135 ), ExtResource( 136 ), ExtResource( 137 ), ExtResource( 138 ), ExtResource( 139 ), ExtResource( 140 ), ExtResource( 141 ), ExtResource( 142 ), ExtResource( 143 ), ExtResource( 144 ), ExtResource( 145 ), ExtResource( 146 ), ExtResource( 147 ), ExtResource( 148 ), ExtResource( 149 ), ExtResource( 150 ), ExtResource( 151 ), ExtResource( 152 ), ExtResource( 153 ), ExtResource( 154 ) ],
+"loop": true,
+"name": "rifle_move",
+"speed": 30.0
+}, {
+"frames": [ ExtResource( 235 ), ExtResource( 236 ), ExtResource( 237 ), ExtResource( 238 ), ExtResource( 239 ), ExtResource( 240 ), ExtResource( 241 ), ExtResource( 242 ), ExtResource( 243 ), ExtResource( 244 ), ExtResource( 245 ), ExtResource( 246 ), ExtResource( 247 ), ExtResource( 248 ), ExtResource( 249 ) ],
+"loop": false,
+"name": "flashlight_melee",
+"speed": 30.0
+}, {
+"frames": [ ExtResource( 79 ), ExtResource( 80 ), ExtResource( 81 ), ExtResource( 82 ), ExtResource( 83 ), ExtResource( 84 ), ExtResource( 85 ), ExtResource( 86 ), ExtResource( 87 ), ExtResource( 88 ), ExtResource( 89 ), ExtResource( 90 ), ExtResource( 91 ), ExtResource( 92 ), ExtResource( 93 ), ExtResource( 94 ), ExtResource( 95 ), ExtResource( 96 ), ExtResource( 97 ), ExtResource( 98 ) ],
+"loop": true,
+"name": "shotgun_idle",
+"speed": 30.0
+}, {
+"frames": [ ExtResource( 102 ), ExtResource( 103 ), ExtResource( 104 ), ExtResource( 105 ), ExtResource( 106 ), ExtResource( 107 ), ExtResource( 108 ), ExtResource( 109 ), ExtResource( 110 ), ExtResource( 111 ), ExtResource( 112 ), ExtResource( 113 ), ExtResource( 114 ), ExtResource( 115 ), ExtResource( 116 ) ],
+"loop": true,
+"name": "handgun_reload",
+"speed": 30.0
+}, {
+"frames": [ ExtResource( 44 ), ExtResource( 45 ), ExtResource( 46 ), ExtResource( 47 ), ExtResource( 48 ), ExtResource( 49 ), ExtResource( 50 ), ExtResource( 51 ), ExtResource( 52 ), ExtResource( 53 ), ExtResource( 54 ), ExtResource( 55 ), ExtResource( 56 ), ExtResource( 57 ), ExtResource( 58 ) ],
+"loop": false,
+"name": "shotgun_melee",
+"speed": 30.0
+}, {
+"frames": [ ExtResource( 155 ), ExtResource( 156 ), ExtResource( 157 ), ExtResource( 158 ), ExtResource( 159 ), ExtResource( 160 ), ExtResource( 161 ), ExtResource( 162 ), ExtResource( 163 ), ExtResource( 164 ), ExtResource( 165 ), ExtResource( 166 ), ExtResource( 167 ), ExtResource( 168 ), ExtResource( 169 ), ExtResource( 170 ), ExtResource( 171 ), ExtResource( 172 ), ExtResource( 173 ), ExtResource( 174 ) ],
+"loop": true,
+"name": "knife_move",
+"speed": 30.0
 } ]
 
 [sub_resource type="SpriteFrames" id=3]
 animations = [ {
-"frames": [ ExtResource( 365 ), ExtResource( 366 ), ExtResource( 367 ), ExtResource( 368 ), ExtResource( 369 ), ExtResource( 370 ), ExtResource( 371 ), ExtResource( 372 ), ExtResource( 373 ), ExtResource( 374 ), ExtResource( 375 ), ExtResource( 376 ), ExtResource( 377 ), ExtResource( 378 ), ExtResource( 379 ), ExtResource( 380 ), ExtResource( 381 ), ExtResource( 382 ), ExtResource( 383 ), ExtResource( 384 ) ],
-"loop": true,
-"name": "right",
-"speed": 30.0
-}, {
 "frames": [ ExtResource( 345 ), ExtResource( 346 ), ExtResource( 347 ), ExtResource( 348 ), ExtResource( 349 ), ExtResource( 350 ), ExtResource( 351 ), ExtResource( 352 ), ExtResource( 353 ), ExtResource( 354 ), ExtResource( 355 ), ExtResource( 356 ), ExtResource( 357 ), ExtResource( 358 ), ExtResource( 359 ), ExtResource( 360 ), ExtResource( 361 ), ExtResource( 362 ), ExtResource( 363 ), ExtResource( 364 ) ],
 "loop": true,
 "name": "left",
+"speed": 30.0
+}, {
+"frames": [ ExtResource( 365 ), ExtResource( 366 ), ExtResource( 367 ), ExtResource( 368 ), ExtResource( 369 ), ExtResource( 370 ), ExtResource( 371 ), ExtResource( 372 ), ExtResource( 373 ), ExtResource( 374 ), ExtResource( 375 ), ExtResource( 376 ), ExtResource( 377 ), ExtResource( 378 ), ExtResource( 379 ), ExtResource( 380 ), ExtResource( 381 ), ExtResource( 382 ), ExtResource( 383 ), ExtResource( 384 ) ],
+"loop": true,
+"name": "right",
 "speed": 30.0
 }, {
 "frames": [ ExtResource( 385 ) ],
@@ -564,7 +586,8 @@ animations = [ {
 } ]
 
 [node name="Character" type="KinematicBody2D"]
-position = Vector2( 83.7557, -0.540359 )
+material = SubResource( 5 )
+position = Vector2( 82.9819, -0.540359 )
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_group_": true
@@ -572,33 +595,29 @@ __meta__ = {
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 modulate = Color( 1, 0.964706, 0.964706, 1 )
+self_modulate = Color( 0.878906, 0.878906, 0.878906, 1 )
+light_mask = 2
 rotation = -1.5708
 shape = SubResource( 1 )
 one_way_collision = true
 
 [node name="player" type="AnimatedSprite" parent="."]
+material = SubResource( 6 )
 scale = Vector2( 0.2, 0.2 )
 z_index = 2
 frames = SubResource( 2 )
-animation = "shotgun_shoot"
-frame = 2
+animation = "knife_idle"
 
 [node name="muzzle" type="Sprite" parent="player"]
+visible = false
 modulate = Color( 1, 1, 1, 0.545098 )
 self_modulate = Color( 0.780392, 0.603922, 0.603922, 1 )
 position = Vector2( 210, 50 )
 z_index = -1
 texture = ExtResource( 343 )
 
-[node name="torch" type="Light2D" parent="player"]
-position = Vector2( 600, 0 )
-rotation = -3.14159
-scale = Vector2( 4, 4.5 )
-texture = ExtResource( 2 )
-shadow_enabled = true
-shadow_color = Color( 0, 0, 0, 1 )
-
 [node name="feet" type="AnimatedSprite" parent="player"]
+use_parent_material = true
 position = Vector2( -15, 0 )
 scale = Vector2( 1.2, 1.2 )
 z_index = -1
