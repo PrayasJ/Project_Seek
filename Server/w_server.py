@@ -48,14 +48,15 @@ async def register(ws, message):
     data = json.loads(message.decode('UTF-8'))
     if data["party"] == "0":
         if rooms[avb]["participants"] < nr:
-            rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+            pID = data["pID"]
+            rooms[avb][pID] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
             rooms[avb]["participants"] = rooms[avb]["participants"] + 1
-            message = {"action": "joined_room", "joined_room": data["pID"]}
+            message = {"action": "joined_room", "joined_room": pID}
             message = json.dumps(message)
             users = []
             if rooms[avb]["participants"] > 1:
                 for key in rooms[avb].keys():
-                    if key != "participants":
+                    if key != "participants" and key != rooms[avb][pID]:
                         users.append(key)
                         data = {"action": "in_room", "in_room": key}
                         data = json.dumps(data)
@@ -63,21 +64,22 @@ async def register(ws, message):
                 await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
         if rooms[avb]["participants"] >= nr:
             avb = avb+1
-            rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+            rooms[avb][pID] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
             rooms[avb]["participants"] = 1
-    if data["party"] != "0":
+    else:
         code = data["code"]
         p = parties[code]["participants"]
         if rooms[avb]["participants"] < nr - p:
             for i in range(p):
-                rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+                pID = data["pID"]
+                rooms[avb][pID] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
                 rooms[avb]["participants"] = rooms[avb]["participants"] + 1
-                message = {"action": "joined_room", "joined_room": data["pID"]}
+                message = {"action": "joined_room", "joined_room": pID}
                 message = json.dumps(message)
                 users = []
                 if rooms[avb]["participants"] > 1:
                     for key in rooms[avb].keys():
-                        if key != "participants" and key != rooms[avb][data["pID"]]:
+                        if key != "participants" and key != rooms[avb][pID]:
                             users.append(key)
                             data = {"action": "in_room", "in_room": key}
                             data = json.dumps(data)
@@ -86,13 +88,14 @@ async def register(ws, message):
         if rooms[avb]["participants"] >= nr-p:
             avb = avb+1
             for i in range(p):
-                rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+                pID = data["pID"]
+                rooms[avb][pID] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
                 rooms[avb]["participants"] = rooms[avb]["participants"] + 1
-                message = {"action": "joined_room", "joined_room": data["pID"]}
+                message = {"action": "joined_room", "joined_room": pID}
                 message = json.dumps(message)
                 if rooms[avb]["participants"] > 0:
                     for key in rooms[avb].keys():
-                        if key != "participants" and key != rooms[avb][data["pID"]]:
+                        if key != "participants" and key != rooms[avb][pID]:
                             users.append(key)
                             data = {"action": "in_room", "in_room": key}
                             data = json.dumps(data)
