@@ -5,13 +5,15 @@ import websockets
 import csv
 import random, string
 
-global avb
 global all_user
 global parties
+global rooms
 all_user = dict() #users online
 parties = dict() #parties available
 nr = 10 #no of participants in one room
 avb = 0 #no of rooms
+rooms = dict()
+rooms[avb] = {"participants": 0}
 available_room = "room_"+str(avb)+".txt"
 
 async def create(ws):
@@ -33,64 +35,50 @@ async def join(ws):
         ws.send(parties[code]["pid"+str(i+1)])
 
 async def register(ws):
+    global avb
     global available_room
     data = json.loads(message.decode('UTF-8'))
-    f = open(available_room, "r+")
-    line = f.readlines()
-    f.close()
     if data["party"] == "0":
-        if len(line) < nr:
-            f = open(available_room, "a+")
-            f.write(data["pID"]+",0,0,\n")
-            f.close()
+        if rooms[avb]["participants"] < nr:
+            rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+            rooms[avb]["participants"] = rooms[avb]["participants"] + 1
             message = data["pID"]
             users = []
-            if len(line) > 0:
-                for l in line:
-                    l = l.split(',')
-                    users.append(l[0])
-                    await ws.send(l[0])
+            if rooms[avb]["participants"] > 1:
+                for key in rooms[avb].keys():
+                    if key != "participants":
+                        users.append(key)
+                        await ws.send(key)
                 await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
-        if len(line) >= nr:
+        if rooms[avb]["participants"] >= nr:
             avb = avb+1
-            available_room = "room_"+str(avb)+".txt"
-            f = open(available_room, "a+")
-            f.write(data["pID"]+",0,0,\n")
-            f.close()
+            rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+            rooms[avb]["participants"] = 1
     if data["party"] != "0":
         code = data["code"]
         p = parties[code]["participants"]
-        if len(line) < nr - p:
+        if rooms[avb]["participants"] < nr - p:
             for i in range(p):
-                f = open(available_room, "r+")
-                line = f.readlines()
-                f.close()
-                f = open(available_room, "a+")
-                f.write(parties["pid"+str(i+1)]+",0,0,\n")
-                f.close()
+                rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+                rooms[avb]["participants"] = rooms[avb]["participants"] + 1
                 message = parties["pid"+str(i+1)]
                 users = []
-                if len(line) > 0:
-                    for l in line:
-                        l = l.split(',')
-                        users.append(l[0])
-                        await ws.send(l[0])
+                if rooms[avb]["participants"] > 1:
+                    for key in rooms[avb].keys():
+                        if key != "participants" and key != rooms[avb][data["pID"]]:
+                            users.append(key)
+                            await ws.send(key)
                     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
-        if len(line) >= nr-p:
+        if rooms[avb]["participants"] >= nr-p:
             avb = avb+1
-            available_room = "room_"+str(avb)+".txt"
             for i in range(p):
-                f = open(available_room, "r+")
-                line = f.readlines()
-                f.close()
-                f = open(available_room, "a+")
-                f.write(parties["pid"+str(i+1)]+",0,0,\n")
-                f.close()
-                if len(line) > 0:
-                    for l in line:
-                        l = l.split(',')
-                        users.append(l[0])
-                        await ws.send(l[0])
+                rooms[avb][data["pID"]] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+                rooms[avb]["participants"] = rooms[avb]["participants"] + 1
+                if rooms[avb]["participants"] > 0:
+                    for key in rooms[avb].keys():
+                        if key != "participants" and key != rooms[avb][data["pID"]]:
+                            users.append(key)
+                            await ws.send(key)
                     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
 
 async def move_state(data):
