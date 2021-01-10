@@ -55,7 +55,7 @@ func _on_data():
 	if data['action'] == 'join_error':
 		pass
 	if data['action'] == 'entered_room':
-		$Map.show()
+		$Map1.show()
 		$GUI.hide()
 		player = Player.instance()
 		add_child(player)
