@@ -11,3 +11,51 @@ text = "Play"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="create_party" type="Button" parent="."]
+margin_left = 113.221
+margin_top = 467.072
+margin_right = 374.221
+margin_bottom = 542.072
+text = "create party"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="join_party" type="Button" parent="."]
+margin_left = 578.911
+margin_top = 468.877
+margin_right = 839.911
+margin_bottom = 543.877
+text = "join party"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="party_code" type="TextEdit" parent="."]
+margin_left = 579.0
+margin_top = 382.0
+margin_right = 840.0
+margin_bottom = 439.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="created_party_code" type="Label" parent="."]
+visible = false
+margin_left = 138.796
+margin_top = 381.227
+margin_right = 348.796
+margin_bottom = 447.227
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="players" type="Label" parent="."]
+margin_left = 803.0
+margin_top = 2.0
+margin_right = 1019.0
+margin_bottom = 218.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

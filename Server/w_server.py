@@ -10,7 +10,7 @@ global parties
 global rooms
 all_user = dict() #users online
 parties = dict() #parties available
-nr = 2 #no of participants in one room
+nr = 3 #no of participants in one room
 avb = 0 #no of rooms
 rooms = dict()
 rooms[avb] = {"participants": 0}
@@ -20,7 +20,10 @@ async def create(ws, message):
     data = json.loads(message.decode('UTF-8'))
     code = data["code"]
     pid = data["pID"]
-    parties[code] = {"participants":1,"p1": ws, "pid1": pid}
+    parties[code] = {"participants":1,"p1": ws, "pID1": pid}
+    data = {"action": "created_party"}
+    data = json.dumps(data)
+    await ws.send(data)
 
 async def join(ws, message):
     data = json.loads(message.decode('UTF-8'))
@@ -29,18 +32,18 @@ async def join(ws, message):
     if code not in parties:
         data = {"action": "join_error"}
         data = json.dumps(data)
-        ws.send(data)
+        await ws.send(data)
     temp = parties[code]["participants"] + 1
     parties[code]["participants"] = temp
     parties[code]["p"+str(temp)] = ws
-    parties[code]["pid"+str(temp)] = pid
+    parties[code]["pID"+str(temp)] = pid
     for i in range(temp-1):
         data = {"action": "joined_party", "joined_party": pid}
         data = json.dumps(data)
-        parties[code]["p"+str(i+1)].send(data)
-        data = {"action": "joined_party", "joined_party": parties[code]["pid"+str(i+1)]}
+        await parties[code]["p"+str(i+1)].send(data)
+        data = {"action": "joined_party", "joined_party": parties[code]["pID"+str(i+1)]}
         data = json.dumps(data)
-        ws.send(data)
+        await ws.send(data)
 
 async def register(ws, message):
     global avb
@@ -49,8 +52,11 @@ async def register(ws, message):
     if data["party"] == "0":
         if rooms[avb]["participants"] < nr:
             pID = data["pID"]
-            rooms[avb][pID] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+            rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
             rooms[avb]["participants"] = rooms[avb]["participants"] + 1
+            cong = {"action": "entered_room"}
+            cong = json.dumps(cong)
+            await ws.send(cong)
             message = {"action": "joined_room", "joined_room": pID}
             message = json.dumps(message)
             users = []
@@ -66,38 +72,52 @@ async def register(ws, message):
             avb = avb+1
             pID = data["pID"]
             rooms[avb] = dict()
-            rooms[avb][pID] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+            rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
             rooms[avb]["participants"] = 1
+            cong = {"action": "entered_room"}
+            cong = json.dumps(cong)
+            await ws.send(cong)
     else:
         code = data["code"]
         p = parties[code]["participants"]
-        if rooms[avb]["participants"] < nr - p:
+        if rooms[avb]["participants"] <= nr - p:
             for i in range(p):
-                pID = data["pID"]
-                rooms[avb][pID] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+                pID = parties[code]["pID"+str(i+1)]
+                ws = parties[code]["p"+str(i+1)]
+                rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
                 rooms[avb]["participants"] = rooms[avb]["participants"] + 1
+                cong = {"action": "entered_room"}
+                cong = json.dumps(cong)
+                await ws.send(cong)
                 message = {"action": "joined_room", "joined_room": pID}
+                print(message)
                 message = json.dumps(message)
                 users = []
                 if rooms[avb]["participants"] > 1:
                     for key in rooms[avb].keys():
-                        if key != "participants" and key != rooms[avb][pID]:
+                        if key != "participants" and key != pID:
                             users.append(key)
                             data = {"action": "in_room", "in_room": key}
                             data = json.dumps(data)
                             await ws.send(data)
                     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
-        if rooms[avb]["participants"] >= nr-p:
+        else:
             avb = avb+1
+            rooms[avb] = dict()
+            rooms[avb]['participants'] = 0 
             for i in range(p):
-                pID = data["pID"]
-                rooms[avb][pID] = {"ws": ws, "x": data["x"], "y": data["y"], "rot": data["rot"]}
+                pID = parties[code]["pID"+str(i+1)]
+                ws = parties[code]["p"+str(i+1)]
+                rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
                 rooms[avb]["participants"] = rooms[avb]["participants"] + 1
+                cong = {"action": "entered_room"}
+                cong = json.dumps(cong)
+                await ws.send(cong)
                 message = {"action": "joined_room", "joined_room": pID}
                 message = json.dumps(message)
                 if rooms[avb]["participants"] > 0:
                     for key in rooms[avb].keys():
-                        if key != "participants" and key != rooms[avb][pID]:
+                        if key != "participants" and key != pID:
                             users.append(key)
                             data = {"action": "in_room", "in_room": key}
                             data = json.dumps(data)
@@ -124,13 +144,14 @@ async def counter(websocket, path):
         async for message in websocket:
             data = json.loads(message.decode('UTF-8'))
             if data["action"] == "play":
+                print(data)
                 await register(websocket, message)
             elif data["action"] == "create":
                 await create(websocket, message)
             elif data["action"] == "move":
                 await move_state(data)
             elif data["action"] == "join":
-                await create(websocket, message)
+                await join(websocket, message)
             else:
                 logging.error("unsupported event: {}", data)
     finally:

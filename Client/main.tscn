@@ -621,5 +621,7 @@ tile_data = PoolIntArray( -655373, 1, 7, -655372, 1, 196612, -655371, 1, 196612,
 [node name="CanvasModulate" type="CanvasModulate" parent="Map"]
 color = Color( 1, 1, 1, 0.533333 )
 [connection signal="pressed" from="GUI/Play" to="." method="_on_Play_pressed"]
+[connection signal="pressed" from="GUI/create_party" to="." method="_on_create_party_pressed"]
+[connection signal="pressed" from="GUI/join_party" to="." method="_on_join_party_pressed"]
 
 [editable path="GUI"]

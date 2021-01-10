@@ -9,6 +9,7 @@ var players = {}
 var pID = null
 # Our WebSocketClient instance
 var _client = WebSocketClient.new()
+var code = '0000'
 
 func _ready():
 	_client.connect("connection_closed", self, "_closed")
@@ -49,6 +50,17 @@ func _on_data():
 		players[data['in_room']] = otherPlayers.instance()
 		players[data['in_room']].init(data['in_room'])
 		add_child(players[data['in_room']])
+	if data['action'] == 'joined_party':
+		$GUI/players.text += '\n'+data['joined_party']
+	if data['action'] == 'join_error':
+		pass
+	if data['action'] == 'entered_room':
+		$Map.show()
+		$GUI.hide()
+		player = Player.instance()
+		add_child(player)
+		player.connect("moveplayer", self, "_moveplayer")
+		player.init(pID)
 func _process(delta):
 	_client.poll()
 
@@ -60,11 +72,36 @@ func _moveplayer(x,y,rot):
 
 
 func _on_Play_pressed():
-	$Map.show()
-	$GUI.hide()
-	player = Player.instance()
-	add_child(player)
-	player.connect("moveplayer", self, "_moveplayer")
-	player.init(pID)
-	var data = JSON.print({"action":"play","pID":pID,"party":"0",'x':0, 'y':0, 'rot':0}).to_utf8()
+	if len($GUI/players.text) > 0:
+		var data = JSON.print({"action":"play","pID":pID,"party":"1",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
+		_client.get_peer(1).put_packet(data)
+	else:
+		var data = JSON.print({"action":"play","pID":pID,"party":"0",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
+		_client.get_peer(1).put_packet(data)
+
+
+func _on_create_party_pressed():
+	var rng = RandomNumberGenerator.new()
+	rng.randomize()
+	code = ""
+	var alph = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z','1','2','3','4','5','6','7','8','9','0']
+	for i in range(4):
+		var r = rng.randi_range(0, 35)
+		code += alph[r]
+	var data = JSON.print({"action":"create","pID":pID,"code":code}).to_utf8()
 	_client.get_peer(1).put_packet(data)
+	$GUI/join_party.hide()
+	$GUI/party_code.hide()
+	$GUI/created_party_code.text = code
+	$GUI/created_party_code.show()
+	$GUI/create_party.hide()
+
+func _on_join_party_pressed():
+	var data = JSON.print({"action":"join","pID":pID,"code":$GUI/party_code.text}).to_utf8()
+	_client.get_peer(1).put_packet(data)
+	$GUI/join_party.hide()
+	$GUI/party_code.hide()
+	$GUI/created_party_code.text = $GUI/party_code.text
+	$GUI/created_party_code.show()
+	$GUI/create_party.hide()
+	$GUI/Play.hide()
