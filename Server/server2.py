@@ -29,7 +29,6 @@ async def move_state(data):
     if len(USERS) > 1:  # asyncio.wait doesn't accept an empty list
         await asyncio.wait([USERS[user]['ws'].send(data) for user in USERS if user != id])
 
-
 async def notify_users(id, ws):
     if len(USERS) > 1:  # asyncio.wait doesn't accept an empty list
         message = users_event(id)
