@@ -61,6 +61,10 @@ func get_input():
 		velocity = Vector2(speed, 0).rotated($player.rotation)
 		if $player/feet.animation != "walk":
 			$player/feet.play("walk")
+	if Input.is_action_pressed('run'):
+		speed = 250
+	else:
+		speed = 150
 	if Input.is_action_pressed('shoot'):
 		$player.play("handgun_shoot")
 	else:
