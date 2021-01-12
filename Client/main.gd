@@ -59,6 +59,7 @@ func _on_data():
 		$GUI.hide()
 		player = Player.instance()
 		add_child(player)
+		add_child(otherPlayers.instance())
 		player.connect("moveplayer", self, "_moveplayer")
 		player.init(pID)
 func _process(delta):
