@@ -4,13 +4,17 @@ import logging
 import websockets
 import csv
 import random, string
+import time
+import socketserver, threading
 
 global all_user
 global parties
 global rooms
+
+threads = []
 all_user = dict() #users online
 parties = dict() #parties available
-nr = 3 #no of participants in one room
+nr = 6 #no of participants in one room
 avb = 0 #no of rooms
 rooms = dict()
 rooms[avb] = {"participants": 0}
@@ -45,11 +49,41 @@ async def join(ws, message):
         data = json.dumps(data)
         await ws.send(data)
 
+async def look():
+    ppl = ["0_1", "0_2", "0_3", "0_4", "1_1", "1_2"]
+    data = {"action": "ids"}
+    users = []
+    time.sleep(30)
+    if len(rooms[avb]) == nr + 1:
+        for i, key in enumerate(rooms[avb].keys()):
+            if key != "participants":
+                users.append(key)
+                r = random.randint(0, nr-i)
+                data[key] = ppl[r]
+                ppl.pop(r)
+    else:
+        for i in range(nr - len(rooms[avb]) + 1):
+            r = random.randint(0, 3 - i)
+            data["bot_"+str(i)] = ppl[r]
+            ppl.pop(r)
+        for i, key in enumerate(rooms[avb].keys()):
+            if key != "participants":
+                users.append(key)
+                r = random.randint(0, nr-i)
+                data[key] = ppl[r]
+                ppl.pop(r)
+    message = json.dumps(data)
+    await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
+
 async def register(ws, message):
     global avb
     global available_room
     data = json.loads(message.decode('UTF-8'))
     if data["party"] == "0":
+        if rooms[avb]["participants"] == 0:
+            t = threading.Thread(target=look)
+            threads.append(t)
+            t.start()
         if rooms[avb]["participants"] < nr:
             pID = data["pID"]
             rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
@@ -70,6 +104,9 @@ async def register(ws, message):
                 await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
         else:
             avb = avb+1
+            t = threading.Thread(target=look)
+            threads.append(t)
+            t.start()
             pID = data["pID"]
             rooms[avb] = dict()
             rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
@@ -103,6 +140,9 @@ async def register(ws, message):
                     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
         else:
             avb = avb+1
+            t = threading.Thread(target=look)
+            threads.append(t)
+            t.start()
             rooms[avb] = dict()
             rooms[avb]['participants'] = 0 
             for i in range(p):
@@ -130,6 +170,18 @@ async def move_state(data):
     if len(all_user) > 1:  # asyncio.wait doesn't accept an empty list
         await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user if user != id])
 
+async def bullet(data):
+    id = data['pID']
+    data = json.dumps(data)
+    if len(all_user) > 1:  # asyncio.wait doesn't accept an empty list
+        await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user if user != id])
+
+async def knife(data):
+    id = data['pID']
+    data = json.dumps(data)
+    if len(all_user) > 1:  # asyncio.wait doesn't accept an empty list
+        await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user if user != id])
+
 async def unregister(websocket):
     [all_user.remove(user) for user in all_user if user[1] == websocket]
 
@@ -152,6 +204,10 @@ async def counter(websocket, path):
                 await move_state(data)
             elif data["action"] == "join":
                 await join(websocket, message)
+            elif data["action"] == "bullet":
+                await bullet(data)
+            elif data["action"] == "knife":
+                await knife(data)
             else:
                 logging.error("unsupported event: {}", data)
     finally:
