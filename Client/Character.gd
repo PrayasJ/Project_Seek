@@ -19,10 +19,10 @@ var knife = load("res://assets/sfx/knife.wav")
 var reload = load("res://assets/sfx/reload.wav")
 var hit = load("res://assets/sfx/hit.wav")
 
-func init(ID):
+func init(ID,x,y):
 	id = ID
-	position.x = 0
-	position.y = 0
+	position.x = x
+	position.y = y
 
 func getID():
 	return id
@@ -71,6 +71,7 @@ func get_input():
 		$player.play("handgun_idle")
 	if velocity == Vector2():
 		$player/feet.play("idle")
+	$CollisionShape2D.rotation_degrees = $player.rotation_degrees - 90
 	emit_signal("moveplayer",position.x,position.y,$player.rotation)
 	velocity = velocity.normalized() * speed
 

@@ -61,7 +61,7 @@ func _on_data():
 		add_child(player)
 		add_child(otherPlayers.instance())
 		player.connect("moveplayer", self, "_moveplayer")
-		player.init(pID)
+		player.init(pID,$Map1/pos_1_1.position.x,$Map1/pos_1_1.position.y)
 func _process(delta):
 	_client.poll()
 

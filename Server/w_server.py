@@ -10,7 +10,7 @@ global parties
 global rooms
 all_user = dict() #users online
 parties = dict() #parties available
-nr = 3 #no of participants in one room
+nr = 6 #no of participants in one room
 avb = 0 #no of rooms
 rooms = dict()
 rooms[avb] = {"participants": 0}
