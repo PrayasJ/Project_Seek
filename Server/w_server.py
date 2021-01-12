@@ -49,31 +49,38 @@ async def join(ws, message):
         data = json.dumps(data)
         await ws.send(data)
 
-async def look():
+async def look_callback():
     ppl = ["0_1", "0_2", "0_3", "0_4", "1_1", "1_2"]
     data = {"action": "ids"}
     users = []
-    time.sleep(30)
+    time.sleep(6)
     if len(rooms[avb]) == nr + 1:
         for i, key in enumerate(rooms[avb].keys()):
             if key != "participants":
                 users.append(key)
-                r = random.randint(0, nr-i)
+                r = random.randint(0, len(ppl) - 1)
                 data[key] = ppl[r]
                 ppl.pop(r)
     else:
         for i in range(nr - len(rooms[avb]) + 1):
-            r = random.randint(0, 3 - i)
+            r = random.randint(0, len(ppl) - 1)
             data["bot_"+str(i)] = ppl[r]
             ppl.pop(r)
         for i, key in enumerate(rooms[avb].keys()):
             if key != "participants":
                 users.append(key)
-                r = random.randint(0, nr-i)
+                r = random.randint(0, len(ppl) - 1)
+                print(data,key,ppl,r)
                 data[key] = ppl[r]
                 ppl.pop(r)
     message = json.dumps(data)
     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
+
+def look():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(look_callback())
+    loop.close()
 
 async def register(ws, message):
     global avb

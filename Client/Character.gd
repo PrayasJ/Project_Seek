@@ -5,8 +5,10 @@ var speed = 150
 var velocity = Vector2()
 
 #export var weapons = ["flashlight", "handgun", "knife", "rifle", "shotgun"]
-export var weapons = ["handgun", "knife"]
+export var weapons = {"handgun":false, "knife":false}
 signal moveplayer(x,y,rot)
+signal shoot(x,y,rot)
+signal knife(x,y,rot)
 #melee, knife, rifle, shotgun, handgun
 
 var melee = load("res://assets/sfx/melee.wav")
@@ -23,6 +25,10 @@ func init(ID,x,y):
 	id = ID
 	position.x = x
 	position.y = y
+
+func set_type(type):
+	weapons[type] = true
+	$player.play(type+"_idle")
 
 func getID():
 	return id
@@ -65,10 +71,16 @@ func get_input():
 		speed = 250
 	else:
 		speed = 150
-	if Input.is_action_pressed('shoot'):
+	if Input.is_action_pressed('shoot') and weapons['handgun']:
 		$player.play("handgun_shoot")
-	else:
+		emit_signal("shoot",position.x,position.y,$player.rotation)
+	elif weapons['handgun']:
 		$player.play("handgun_idle")
+	if Input.is_action_pressed('knife') and weapons['knife']:
+		$player.play("knife_melee")
+		emit_signal("shoot",position.x,position.y,$player.rotation)
+	elif weapons['knife']:
+		$player.play("knife_idle")
 	if velocity == Vector2():
 		$player/feet.play("idle")
 	$CollisionShape2D.rotation_degrees = $player.rotation_degrees - 90
