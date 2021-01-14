@@ -175,7 +175,7 @@ async def move_state(data):
     id = data['pID']
     data = json.dumps(data)
     if len(all_user) > 1:  # asyncio.wait doesn't accept an empty list
-        await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user if user != id])
+        await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user])
 
 async def bullet(data):
     id = data['pID']

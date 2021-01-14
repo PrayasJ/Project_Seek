@@ -32,7 +32,6 @@ func _connected(proto = ""):
 func _on_data():
 	var data = _client.get_peer(1).get_packet().get_string_from_utf8()
 	data = JSON.parse(data).result
-	print(data)
 	if data["action"] == "sent_pID":
 		print("Joined with ID" + data["pID"])
 		pID = data["pID"]
@@ -42,10 +41,13 @@ func _on_data():
 		add_child(players[data['ID']])
 		print("New User added")
 	if data["action"] == "move":
-		players[data['pID']].move(data['x'],data['y'],data['rot'])
+		if data['pID'] == pID:
+			player.move(data['x'],data['y'],data['vx'],data['vy'],data['rot'])
+		else:
+			players[data['pID']].move(data['x'],data['y'],data['vx'],data['vy'],data['rot'])
 	if data['action'] == "joined_room":
 		players[data['joined_room']] = otherPlayers.instance()
-		players[data['joined_room']].init(data['joined_room'])
+		players[data['joined_room']].init(data['joined_room'],0,0)
 		add_child(players[data['joined_room']])
 	if data['action'] == "in_room":
 		players[data['in_room']] = otherPlayers.instance()
@@ -61,10 +63,13 @@ func _on_data():
 		add_child(player)
 		player.set_type('knife' if data[pID][0] == '0' else 'handgun')
 		player.init(pID,get_node("Map1/pos_"+data[pID]).position.x,get_node("Map1/pos_"+data[pID]).position.y)
+		#player.init(pID,0,0)
 		for ids in data:
 			if ids != pID  and ids != 'action' and ids[3] != '_':
+				print(ids+" joined for no reason")
 				players[ids].set_type('knife' if data[ids][0] == '0' else 'handgun')
 				players[ids].init(ids,get_node("Map1/pos_"+data[ids]).position.x,get_node("Map1/pos_"+data[ids]).position.y)
+				#players[ids].init(ids,0,0)
 	if data['action'] == 'entered_room':
 		player = Player.instance()
 		player.connect("moveplayer", self, "_moveplayer")
@@ -73,10 +78,10 @@ func _on_data():
 func _process(delta):
 	_client.poll()
 
-func _moveplayer(x,y,rot):
+func _moveplayer(x,y,vx,vy,rot):
 	var playerID = player.getID()
 	if playerID != null:
-		var data = JSON.print({"action":"move","pID":playerID,'x':x, 'y':y, 'rot':rot}).to_utf8()
+		var data = JSON.print({"action":"move","pID":playerID,'x':x, 'y':y,'vx':vx, 'vy':vy, 'rot':rot}).to_utf8()
 		_client.get_peer(1).put_packet(data)
 
 func _shoot(x,y,rot):
