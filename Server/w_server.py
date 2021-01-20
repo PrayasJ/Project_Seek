@@ -5,6 +5,7 @@ import websockets
 import csv
 import random, string
 import time
+import http.server
 import socketserver, threading
 
 global all_user
@@ -219,6 +220,36 @@ async def counter(websocket, path):
                 logging.error("unsupported event: {}", data)
     finally:
         await unregister(websocket)
+
+class routing(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        print(self.path)
+        if self.path == '/authentication':
+            self.path = 'auth.html'
+        return http.server.SimpleHTTPRequestHandler.do_GET(self)
+    def do_POST(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+        self.send_response(200)
+        self.end_headers()
+        data = json.loads(self.data_string)
+        #use data however you want
+        print(data)
+        return
+
+handler_object = routing
+my_server = socketserver.TCPServer(("", 9898), handler_object)
+
+def routes_thread():
+    my_server.serve_forever()
+    asyncio.get_event_loop().run_until_complete(my_server)
+    second_loop = asyncio.new_event_loop()
+    execute_polling_coroutines_forever(second_loop)
+    return
+
+threading.Thread(target=routes_thread).start()
 
 start_server = websockets.serve(counter, "localhost", 6789)
 asyncio.get_event_loop().run_until_complete(start_server)

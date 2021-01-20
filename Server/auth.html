@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project_Seek Authentication</title>
+  <link rel="stylesheet" href="auth_style.css" />
+  <script src="https://kit.fontawesome.com/18f623a2bd.js" crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-auth.js"></script>
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyAaFFAPOlx6QB60lUrG_2_ZCX9_sCkplfI",
+      authDomain: "projectseek.firebaseapp.com",
+      projectId: "projectseek",
+      storageBucket: "projectseek.appspot.com",
+      messagingSenderId: "375561028410",
+      appId: "1:375561028410:web:a127154ffe4c0e8cfe0603",
+      measurementId: "G-15RM36D1FN",
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <script type="text/javascript">
+    function toggleFacebookSignIn() {
+      if (!firebase.auth().currentUser) {
+        var provider = new firebase.auth.FacebookAuthProvider();
+        firebase.auth().signInWithPopup(provider).then(function (result) {
+          var token = result.credential.accessToken;
+          var user = result.user;
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.open("POST", "/json-handler");
+          xmlhttp.setRequestHeader("Content-Type", "application/json");
+          xmlhttp.send(JSON.stringify(user));
+        }).catch(function (error) {
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          var email = error.email;
+          var credential = error.credential;
+          if (errorCode === 'auth/account-exists-with-different-credential') {
+            alert('You have already signed up with a different auth provider for that email.');
+          } else {
+            console.error(error);
+          }
+        });
+      } else {
+        firebase.auth().signOut();
+      }
+      document.getElementById("facebook-login").disabled = true;
+    }
+    function toggleGithubSignIn() {
+      if (!firebase.auth().currentUser) {
+        var provider = new firebase.auth.GithubAuthProvider();
+        firebase.auth().signInWithPopup(provider).then(function (result) {
+          var token = result.credential.accessToken;
+          var user = result.user;
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.open("POST", "/json-handler");
+          xmlhttp.setRequestHeader("Content-Type", "application/json");
+          xmlhttp.send(JSON.stringify(user));
+        }).catch(function (error) {
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          var email = error.email;
+          var credential = error.credential;
+          if (errorCode === 'auth/account-exists-with-different-credential') {
+            alert('You have already signed up with a different auth provider for that email.');
+          } else {
+            console.error(error);
+          }
+        });
+      } else {
+        firebase.auth().signOut();
+      }
+      document.getElementById("github-login").disabled = true;
+    }
+    function toggleGoogleSignIn() {
+      if (!firebase.auth().currentUser) {
+        var provider = new firebase.auth.GoogleAuthProvider();
+        firebase
+          .auth()
+          .signInWithPopup(provider)
+          .then(function (result) {
+            var token = result.credential.accessToken;
+            var user = result.user;
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "/json-handler");
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send(JSON.stringify(user));
+          })
+          .catch(function (error) {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            var email = error.email;
+            var credential = error.credential;
+            if (
+              errorCode === "auth/account-exists-with-different-credential"
+            ) {
+              alert(
+                "You have already signed up with a different auth provider for that email."
+              );
+            } else {
+              console.error(error);
+            }
+          });
+      } else {
+        firebase.auth().signOut();
+      }
+      document.getElementById("google-login").disabled = true;
+    }
+    function toggleTwitterSignIn(){
+      if (!firebase.auth().currentUser) {
+        var provider = new firebase.auth.TwitterAuthProvider();
+        firebase
+          .auth()
+          .signInWithPopup(provider)
+          .then(function (result) {
+            var token = result.credential.accessToken;
+            var user = result.user;
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "/json-handler");
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send(JSON.stringify(user));
+          })
+          .catch(function (error) {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            var email = error.email;
+            var credential = error.credential;
+            if (
+              errorCode === "auth/account-exists-with-different-credential"
+            ) {
+              alert(
+                "You have already signed up with a different auth provider for that email."
+              );
+            } else {
+              console.error(error);
+            }
+          });
+      } else {
+        firebase.auth().signOut();
+      }
+      document.getElementById("twitter-login").disabled = true;
+    }
+    function initApp() {
+      firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+          var displayName = user.displayName;
+          var email = user.email;
+          var emailVerified = user.emailVerified;
+          var photoURL = user.photoURL;
+          var isAnonymous = user.isAnonymous;
+          var uid = user.uid;
+          var providerData = user.providerData;
+        }
+        document.getElementById("google-login").disabled = false;
+        document.getElementById("facebook-login").disabled = false;
+        document.getElementById("github-login").disabled = false;
+        document.getElementById("twitter-login").disabled = false;
+      });
+
+      document
+        .getElementById("google-login")
+        .addEventListener("click", toggleGoogleSignIn, false);
+      document
+        .getElementById("facebook-login")
+        .addEventListener("click", toggleFacebookSignIn, false);
+      document
+        .getElementById("github-login")
+        .addEventListener("click", toggleGithubSignIn, false);
+      document
+        .getElementById("twitter-login")
+        .addEventListener("click", toggleTwitterSignIn, false);
+    }
+
+    window.onload = function () {
+      initApp();
+    };
+  </script>
+</head>
+
+<body>
+  <script>
+    window.fbAsyncInit = function() {
+       FB.init ({
+          appId      : '164214138797609',
+          xfbml      : true,
+          version    : 'v9.0'
+       });
+    };
+ 
+    (function(d, s, id) {
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+    } (document, 'script', 'facebook-jssdk'));
+   
+ </script>
+  <div class="form">
+    <div class="form-toggle"></div>
+    <div class="form-panel one">
+      <div class="form-header">
+        <h1>Account Login</h1>
+      </div>
+      <div class="form-content">
+        <form>
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required="required" />
+          </div>
+          <div class="form-group">
+            <label class="form-remember">
+              <input type="checkbox" />Remember Me </label><a class="form-recovery" href="#">Forgot Password?</a>
+          </div>
+          <div class="form-group">
+            <button type="submit">Log In</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="form-panel two">
+      <div class="form-header">
+        <h1>Register Account</h1>
+      </div>
+      <div class="form-content">
+        <form>
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="cpassword">Confirm Password</label>
+            <input type="password" id="cpassword" name="cpassword" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required="required" />
+          </div>
+          <div class="form-group">
+            <button type="submit">Register</button>
+          </div>
+        </form>
+      </div>
+      <div class="form-header">
+        <h1>Or Sign Up using</h1>
+      </div>
+      <div class="form-content">
+        <form>
+          <div class="form-group">
+            <div class="buttons-container">
+              <div id="facebook-login" class="button facebook">
+                <i class="fab fa-facebook-f fa-2x"></i>
+              </div>
+              <div id="twitter-login" class="button twitter">
+                <i class="fab fa-twitter fa-2x"></i>
+              </div>
+              <div id="github-login" class="button github">
+                <i class="fab fa-github fa-2x"></i>
+              </div>
+              <div id="google-login" class="button google">
+                <i class="fab fa-google fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script>
+      $(document).ready(function () {
+        var panelOne = $(".form-panel.two").height(),
+          panelTwo = $(".form-panel.two")[0].scrollHeight;
+
+        $(".form-panel.two")
+          .not(".form-panel.two.active")
+          .on("click", function (e) {
+            e.preventDefault();
+
+            $(".form-toggle").addClass("visible");
+            $(".form-panel.one").addClass("hidden");
+            $(".form-panel.two").addClass("active");
+            $(".form").animate(
+              {
+                height: panelTwo,
+              },
+              200
+            );
+          });
+
+        $(".form-toggle").on("click", function (e) {
+          e.preventDefault();
+          $(this).removeClass("visible");
+          $(".form-panel.one").removeClass("hidden");
+          $(".form-panel.two").removeClass("active");
+          $(".form").animate(
+            {
+              height: panelOne,
+            },
+            200
+          );
+        });
+      });
+    </script>
+</body>
+
+</html>
