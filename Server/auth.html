@@ -144,6 +144,11 @@
       }
       document.getElementById("twitter-login").disabled = true;
     }
+    function signOutAccount(){
+      firebase.auth().signOut();
+      $('.not-logged-in').show();
+      $('.logged-in').hide();
+    }
     function initApp() {
       firebase.auth().onAuthStateChanged(function (user) {
         if (user) {
@@ -154,6 +159,15 @@
           var isAnonymous = user.isAnonymous;
           var uid = user.uid;
           var providerData = user.providerData;
+          $('.not-logged-in').hide();
+          $('.logged-in').show();
+          $('.logged-in .hidden').removeClass('hidden');
+          $(".logged-in label[for*='username']").text(displayName);
+          $(".logged-in label[for*='email']").text(email);
+          $(".logged-in label[for*='uid']").text(uid);
+          $(".logged-in .profile-pic").attr("src",photoURL);
+        } else {
+          $('.not-logged-in').show();
         }
         document.getElementById("google-login").disabled = false;
         document.getElementById("facebook-login").disabled = false;
@@ -173,9 +187,14 @@
       document
         .getElementById("twitter-login")
         .addEventListener("click", toggleTwitterSignIn, false);
+      document
+        .getElementById("sign-out")
+        .addEventListener("click", signOutAccount, false);
     }
 
     window.onload = function () {
+      $('.logged-in').hide();
+      $('.not-logged-in').hide();
       initApp();
     };
   </script>
@@ -200,7 +219,7 @@
     } (document, 'script', 'facebook-jssdk'));
    
  </script>
-  <div class="form">
+  <div class="form not-logged-in">
     <div class="form-toggle"></div>
     <div class="form-panel one">
       <div class="form-header">
@@ -231,7 +250,7 @@
         <h1>Register Account</h1>
       </div>
       <div class="form-content">
-        <form>
+        <form class="email-register">
           <div class="form-group">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" required="required" />
@@ -257,7 +276,7 @@
         <h1>Or Sign Up using</h1>
       </div>
       <div class="form-content">
-        <form>
+        <form class="social-register">
           <div class="form-group">
             <div class="buttons-container">
               <div id="facebook-login" class="button facebook">
@@ -276,6 +295,33 @@
           </div>
         </form>
       </div>
+    </div>
+    </div>
+    <div class="form logged-in">
+      <div class="form-panel one">
+        <div class="form-header">
+          <h1>User Information</h1>
+        </div>
+        <div class="form-content">
+          <form>
+            <div class="form-group">
+              <img class='profile-pic' src="data:," alt>
+          </div>
+            <div class="form-group">
+              <label for="username">Username</label>
+            </div>
+            <div class="form-group">
+              <label for="email"></label>
+            </div>
+            <div class="form-group">
+              <label for="uid"></label>
+            </div>
+            <div class="form-group">
+              <button type="button" id='sign-out'>Sign Out</button>
+            </div>
+          </form>
+        </div>
+        </div>
     </div>
     <script>
       $(document).ready(function () {
