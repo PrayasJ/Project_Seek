@@ -7,7 +7,25 @@ import random, string
 import time
 import http.server
 import socketserver, threading
+import firebase_admin
+from firebase_admin import credentials, firestore
 
+cred = credentials.Certificate("projectseek-firebase.json")
+firebase_admin.initialize_app(cred)
+firestore_db = firestore.client()
+"""
+
+WILL DELETE THIS LATER AFTER USE, JUST LIKE I SHOULD HAVE BEEN.
+
+firestore_db.collection(u'users').document('uid1').set({'name': 'User1', 'Level': '0'})
+firestore_db.collection(u'users').document('uid2').set({'name': 'User2', 'Level': '3'})
+for snapshot in list(firestore_db.collection('users').stream()):
+    print(snapshot.to_dict())
+print(firestore_db.collection('users').document('uid3').get().to_dict())
+firestore_db.collection('users').document('uid1').delete()
+print(list(firestore_db.collection('users').where('u').stream()))
+firestore_db.collection('users').document('uid1').update({'Level':1})
+"""
 global all_user
 global parties
 global rooms
@@ -223,20 +241,34 @@ async def counter(websocket, path):
 
 class routing(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
-        print(self.path)
         if self.path == '/authentication':
             self.path = 'auth.html'
         return http.server.SimpleHTTPRequestHandler.do_GET(self)
     def do_POST(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-        self.data_string = self.rfile.read(int(self.headers['Content-Length']))
-        self.send_response(200)
-        self.end_headers()
-        data = json.loads(self.data_string)
-        #use data however you want
-        print(data)
+        if 'sign-in-' in self.path:
+            self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+            data = json.loads(self.data_string)
+            user = firestore_db.collection('users').document(data['uid']).get().to_dict()
+            if user == None:
+                firestore_db.collection('users').document(data['uid']).set({'username':'unset'})
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(json.dumps(user).encode(encoding='utf_8'))
+
+        elif self.path == '/new-user':
+            self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+            data = json.loads(self.data_string)
+            firestore_db.collection('users').document(data['uid_reg']).set({'username':data['user'],'password':data['pass']})
+            self.send_response(200)
+            self.end_headers()
+        
+        elif self.path == "/check-available-username":
+            self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+            data = json.loads(self.data_string)
+            data = list(firestore_db.collection('users').where('username','==',data['username']).stream())
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(json.dumps({'avail':('True' if len(data) != 0 else 'False')}).encode(encoding='utf_8'))
         return
 
 handler_object = routing

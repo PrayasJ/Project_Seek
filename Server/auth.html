@@ -24,71 +24,28 @@
   </script>
 
   <script type="text/javascript">
-    function toggleFacebookSignIn() {
-      if (!firebase.auth().currentUser) {
-        var provider = new firebase.auth.FacebookAuthProvider();
+  function toggleSignIn(platform) {
+      if (!firebase.auth().currentUser){
+        var provider;
+        if(platform == 'google') provider = new firebase.auth.GoogleAuthProvider();
+        else if(platform == 'twitter') provider = new firebase.auth.TwitterAuthProvider();
+        else if(platform == 'facebook') provider = new firebase.auth.FacebookAuthProvider();
+        else if(platform == 'github') provider = new firebase.auth.GithubAuthProvider();
+
         firebase.auth().signInWithPopup(provider).then(function (result) {
-          var token = result.credential.accessToken;
-          var user = result.user;
-          var xmlhttp = new XMLHttpRequest();
-          xmlhttp.open("POST", "/json-handler");
-          xmlhttp.setRequestHeader("Content-Type", "application/json");
-          xmlhttp.send(JSON.stringify(user));
-        }).catch(function (error) {
-          var errorCode = error.code;
-          var errorMessage = error.message;
-          var email = error.email;
-          var credential = error.credential;
-          if (errorCode === 'auth/account-exists-with-different-credential') {
-            alert('You have already signed up with a different auth provider for that email.');
-          } else {
-            console.error(error);
-          }
-        });
-      } else {
-        firebase.auth().signOut();
-      }
-      document.getElementById("facebook-login").disabled = true;
-    }
-    function toggleGithubSignIn() {
-      if (!firebase.auth().currentUser) {
-        var provider = new firebase.auth.GithubAuthProvider();
-        firebase.auth().signInWithPopup(provider).then(function (result) {
-          var token = result.credential.accessToken;
-          var user = result.user;
-          var xmlhttp = new XMLHttpRequest();
-          xmlhttp.open("POST", "/json-handler");
-          xmlhttp.setRequestHeader("Content-Type", "application/json");
-          xmlhttp.send(JSON.stringify(user));
-        }).catch(function (error) {
-          var errorCode = error.code;
-          var errorMessage = error.message;
-          var email = error.email;
-          var credential = error.credential;
-          if (errorCode === 'auth/account-exists-with-different-credential') {
-            alert('You have already signed up with a different auth provider for that email.');
-          } else {
-            console.error(error);
-          }
-        });
-      } else {
-        firebase.auth().signOut();
-      }
-      document.getElementById("github-login").disabled = true;
-    }
-    function toggleGoogleSignIn() {
-      if (!firebase.auth().currentUser) {
-        var provider = new firebase.auth.GoogleAuthProvider();
-        firebase
-          .auth()
-          .signInWithPopup(provider)
-          .then(function (result) {
             var token = result.credential.accessToken;
             var user = result.user;
             var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("POST", "/json-handler");
+            xmlhttp.open("POST", "/sign-in-"+platform);
             xmlhttp.setRequestHeader("Content-Type", "application/json");
             xmlhttp.send(JSON.stringify(user));
+            xmlhttp.onload = function(){
+              if(JSON.parse(xmlhttp.responseText)['username'] == 'unset'){
+                $('#unset').show();
+                $("#set").hide();
+                $("#uid_reg").val(user['uid']);
+              }
+            }
           })
           .catch(function (error) {
             var errorCode = error.code;
@@ -108,41 +65,7 @@
       } else {
         firebase.auth().signOut();
       }
-      document.getElementById("google-login").disabled = true;
-    }
-    function toggleTwitterSignIn(){
-      if (!firebase.auth().currentUser) {
-        var provider = new firebase.auth.TwitterAuthProvider();
-        firebase
-          .auth()
-          .signInWithPopup(provider)
-          .then(function (result) {
-            var token = result.credential.accessToken;
-            var user = result.user;
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("POST", "/json-handler");
-            xmlhttp.setRequestHeader("Content-Type", "application/json");
-            xmlhttp.send(JSON.stringify(user));
-          })
-          .catch(function (error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            var email = error.email;
-            var credential = error.credential;
-            if (
-              errorCode === "auth/account-exists-with-different-credential"
-            ) {
-              alert(
-                "You have already signed up with a different auth provider for that email."
-              );
-            } else {
-              console.error(error);
-            }
-          });
-      } else {
-        firebase.auth().signOut();
-      }
-      document.getElementById("twitter-login").disabled = true;
+      document.getElementById(platform+"-login").disabled = true;
     }
     function signOutAccount(){
       firebase.auth().signOut();
@@ -159,6 +82,17 @@
           var isAnonymous = user.isAnonymous;
           var uid = user.uid;
           var providerData = user.providerData;
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.open("POST", "/sign-in-old");
+          xmlhttp.setRequestHeader("Content-Type", "application/json");
+          xmlhttp.send(JSON.stringify(user));
+          xmlhttp.onload = function(){
+            if(JSON.parse(xmlhttp.responseText)['username'] == 'unset'){
+              $('#unset').show();
+              $("#set").hide();
+              $("#uid_reg").val(uid);
+            }
+          }
           $('.not-logged-in').hide();
           $('.logged-in').show();
           $('.logged-in .hidden').removeClass('hidden');
@@ -169,34 +103,78 @@
         } else {
           $('.not-logged-in').show();
         }
-        document.getElementById("google-login").disabled = false;
-        document.getElementById("facebook-login").disabled = false;
-        document.getElementById("github-login").disabled = false;
-        document.getElementById("twitter-login").disabled = false;
+        var auths = ['google','facebook','twitter','github'];
+        auths.forEach(function(platform){
+          document.getElementById(platform+"-login").disabled = false;
+        });
       });
-
-      document
-        .getElementById("google-login")
-        .addEventListener("click", toggleGoogleSignIn, false);
-      document
-        .getElementById("facebook-login")
-        .addEventListener("click", toggleFacebookSignIn, false);
-      document
-        .getElementById("github-login")
-        .addEventListener("click", toggleGithubSignIn, false);
-      document
-        .getElementById("twitter-login")
-        .addEventListener("click", toggleTwitterSignIn, false);
-      document
-        .getElementById("sign-out")
-        .addEventListener("click", signOutAccount, false);
+      var auths = ['google','facebook','twitter','github'];
+      auths.forEach(function(platform){
+        document.getElementById(platform+"-login").addEventListener("click", function(){toggleSignIn(platform);}, false);
+      });
+      document.getElementById("sign-out").addEventListener("click", signOutAccount, false);
     }
 
     window.onload = function () {
       $('.logged-in').hide();
       $('.not-logged-in').hide();
+      $('#unset').hide();
       initApp();
     };
+    $(function (){
+      $('#username-setup').on('submit', function (e) {
+        e.preventDefault();
+        if($('#message_pass').html()=='Matching' && $('#message_user').html()=='Available'){
+          var data = $('#username-setup').serializeArray();
+          var data_dict = {};
+          $.map(data, function(n, i){
+            data_dict[n['name']] = n['value'];
+          });
+          console.log(data_dict);
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.open("POST", "/new-user");
+          xmlhttp.setRequestHeader("Content-Type", "application/json");
+          xmlhttp.send(JSON.stringify(data_dict));
+          xmlhttp.onload = function(){
+            $('.logged-in').show();
+            $('#unset').hide();
+            $('#set').show();
+          }
+        }
+      });
+    });
+    $(function(){
+      $('#pass, #cpass').on('keyup', function () {
+        if($('#cpass').val() !=''){
+          if ($('#pass').val() == $('#cpass').val()) {
+            $('#message_pass').html('Matching').css('color', 'green');
+          } else 
+            $('#message_pass').html('Not Matching').css('color', 'red');
+        }
+        else{
+          $('#message_pass').html('');
+        }
+      });
+    });
+    $(function(){
+      $('#user').on('focusout', function () {
+        if($('#user').val() !=''){
+          var xmlhttp = new XMLHttpRequest();
+          xmlhttp.open("POST", "/check-available-username");
+          xmlhttp.setRequestHeader("Content-Type", "application/json");
+          xmlhttp.send(JSON.stringify({'username':$('#user').val()}));
+          xmlhttp.onload = function(){
+            if(JSON.parse(xmlhttp.responseText)['avail'] == 'False'){
+                $('#message_user').html('Available').css('color', 'green');
+              } else{
+                $('#message_user').html('Not Available').css('color', 'red');
+              }
+          }
+        } else{
+          $('#message_user').html('');
+        }
+      });
+    });
   </script>
 </head>
 
@@ -298,7 +276,7 @@
     </div>
     </div>
     <div class="form logged-in">
-      <div class="form-panel one">
+      <div id="set" class="form-panel one">
         <div class="form-header">
           <h1>User Information</h1>
         </div>
@@ -322,6 +300,33 @@
           </form>
         </div>
         </div>
+        <div id="unset" class="form-panel one">
+          <div class="form-header">
+            <h1>User Creation</h1>
+          </div>
+          <div class="form-content">
+            <form id="username-setup">
+              <div class="form-group">
+                <label for="user">Username</label>
+                <input type="text" id="user" name="user" required="required" />
+                <label id="message_user"></label>
+              </div>
+              <div class="form-group">
+                <label for="pass">Password</label>
+                <input type="password" id="pass" name="pass" pattern="(?=.*[A-Z]).{8,}" title="Must contain at least one uppercase letter and at least 8 or more characters" required="required" />
+              </div>
+              <div class="form-group">
+                <label for="cpass">Confirm Password</label>
+                <input type="password" id="cpass" name="cpass" required="required" />
+                <label id="message_pass"></label>
+              </div>
+              <input type="hidden" id="uid_reg" name="uid_reg" />
+              <div class="form-group">
+                <button type="submit">Finalize</button>
+              </div>
+            </form>
+          </div>
+          </div>
     </div>
     <script>
       $(document).ready(function () {
