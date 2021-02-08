@@ -1,61 +1,107 @@
-[gd_scene format=2]
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://assets/newgui/titlebar.png" type="Texture" id=1]
+[ext_resource path="res://assets/newgui/shop.png" type="Texture" id=2]
+[ext_resource path="res://assets/newgui/createparty.png" type="Texture" id=3]
+[ext_resource path="res://assets/newgui/play.png" type="Texture" id=4]
+[ext_resource path="res://assets/newgui/settings.png" type="Texture" id=5]
+[ext_resource path="res://assets/newgui/credits bttn.png" type="Texture" id=6]
+[ext_resource path="res://assets/newgui/Rectangle 7.png" type="Texture" id=7]
+[ext_resource path="res://assets/newgui/join party section.png" type="Texture" id=8]
 
 [node name="GUI" type="Node2D"]
 
-[node name="Play" type="Button" parent="."]
-margin_left = 230.553
-margin_top = 190.802
-margin_right = 689.553
-margin_bottom = 321.802
-text = "Play"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="Sprite2" type="Sprite" parent="."]
+position = Vector2( 960.303, 540.456 )
+texture = ExtResource( 7 )
 
-[node name="create_party" type="Button" parent="."]
-margin_left = 113.221
-margin_top = 467.072
-margin_right = 374.221
-margin_bottom = 542.072
-text = "create party"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="join_party" type="Button" parent="."]
-margin_left = 578.911
-margin_top = 468.877
-margin_right = 839.911
-margin_bottom = 543.877
-text = "join party"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="party_code" type="TextEdit" parent="."]
-margin_left = 579.0
-margin_top = 382.0
-margin_right = 840.0
-margin_bottom = 439.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="created_party_code" type="Label" parent="."]
+[node name="friendlist" type="ScrollContainer" parent="Sprite2"]
 visible = false
-margin_left = 138.796
-margin_top = 381.227
-margin_right = 348.796
-margin_bottom = 447.227
+margin_left = 600.0
+margin_top = -237.0
+margin_right = 866.0
+margin_bottom = 191.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="players" type="Label" parent="."]
-margin_left = 803.0
-margin_top = 2.0
-margin_right = 1019.0
-margin_bottom = 218.0
+[node name="VScrollBar" type="VScrollBar" parent="Sprite2/friendlist"]
+margin_right = 12.0
+margin_bottom = 12.0
+
+[node name="friend1" type="Node2D" parent="Sprite2/friendlist"]
+position = Vector2( 0.334351, 0.30722 )
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Sprite2/friendlist/friend1"]
+margin_right = 180.0
+margin_bottom = 40.0
+text = "SGVAHHJAJKKAGKAJSLASAH"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Sprite" type="Sprite" parent="Sprite2"]
+position = Vector2( -324.586, -369.54 )
+texture = ExtResource( 1 )
+
+[node name="shop" type="TextureButton" parent="Sprite2"]
+margin_left = -837.353
+margin_top = 209.316
+margin_right = -467.353
+margin_bottom = 337.316
+texture_normal = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="settings" type="TextureButton" parent="Sprite2"]
+margin_left = -163.613
+margin_top = 205.495
+margin_right = 206.387
+margin_bottom = 333.495
+texture_normal = ExtResource( 5 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextureButton4" type="TextureButton" parent="Sprite2"]
+margin_left = 669.758
+margin_top = 373.406
+margin_right = 877.758
+margin_bottom = 445.406
+texture_normal = ExtResource( 6 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="join" type="TextureButton" parent="Sprite2"]
+margin_left = -169.861
+margin_top = -172.043
+margin_right = 200.139
+margin_bottom = 71.9575
+texture_normal = ExtResource( 8 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="playcreate" type="Node2D" parent="Sprite2"]
+position = Vector2( -841.544, -179.363 )
+
+[node name="play" type="TextureButton" parent="Sprite2/playcreate"]
+margin_top = 12.0
+margin_right = 370.0
+margin_bottom = 140.0
+texture_normal = ExtResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="createparty" type="TextureButton" parent="Sprite2/playcreate"]
+margin_left = 0.756287
+margin_top = 124.661
+margin_right = 370.756
+margin_bottom = 252.661
+texture_normal = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
 }

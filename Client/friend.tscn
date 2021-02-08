@@ -1,0 +1,13 @@
+[gd_scene format=2]
+
+[node name="friend1" type="Node2D"]
+position = Vector2( 0.334351, 0.30722 )
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+margin_right = 180.0
+margin_bottom = 40.0
+text = "srdttftt
+"
+__meta__ = {
+"_edit_use_anchors_": false
+}
