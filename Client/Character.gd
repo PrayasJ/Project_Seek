@@ -5,12 +5,9 @@ var speed = 150
 var velocity = Vector2()
 
 #export var weapons = ["flashlight", "handgun", "knife", "rifle", "shotgun"]
-export var weapons = {"handgun":false, "knife":false}
-signal moveplayer(x,y,vx,vy,rot)
-signal shoot(x,y,rot)
-signal knife(x,y,rot)
+export var weapons = ["handgun", "knife"]
+signal moveplayer(x,y,rot)
 #melee, knife, rifle, shotgun, handgun
-var target = Vector2()
 
 var melee = load("res://assets/sfx/melee.wav")
 var run = load("res://assets/sfx/run.wav")
@@ -26,10 +23,6 @@ func init(ID,x,y):
 	id = ID
 	position.x = x
 	position.y = y
-
-func set_type(type):
-	weapons[type] = true
-	$player.play(type+"_idle")
 
 func getID():
 	return id
@@ -49,17 +42,9 @@ func _input(event):
 func hit_sfx():
 	$sfx.set_stream(hit)
 
-func move(x, y, vx, vy, rot):
-	velocity = Vector2(vx,vy)
-	$player.rotation = rot
-	
 func get_input():
 	$player.look_at(get_global_mouse_position())
 	velocity = Vector2()
-	if Input.is_action_pressed('run'):
-		speed = 250
-	else:
-		speed = 150
 	if Input.is_action_pressed('ui_right'):
 		velocity = Vector2(0, speed).rotated($player.rotation)
 		if $player/feet.animation != "walk":
@@ -76,21 +61,19 @@ func get_input():
 		velocity = Vector2(speed, 0).rotated($player.rotation)
 		if $player/feet.animation != "walk":
 			$player/feet.play("walk")
-	if Input.is_action_pressed('shoot') and weapons['handgun']:
+	if Input.is_action_pressed('run'):
+		speed = 250
+	else:
+		speed = 150
+	if Input.is_action_pressed('shoot'):
 		$player.play("handgun_shoot")
-		emit_signal("shoot",position.x,position.y,$player.rotation)
-	elif weapons['handgun']:
+	else:
 		$player.play("handgun_idle")
-	if Input.is_action_pressed('knife') and weapons['knife']:
-		$player.play("knife_melee")
-		emit_signal("shoot",position.x,position.y,$player.rotation)
-	elif weapons['knife']:
-		$player.play("knife_idle")
 	if velocity == Vector2():
 		$player/feet.play("idle")
 	$CollisionShape2D.rotation_degrees = $player.rotation_degrees - 90
+	emit_signal("moveplayer",position.x,position.y,$player.rotation)
 	velocity = velocity.normalized() * speed
-	emit_signal("moveplayer",position.x,position.y,velocity.x,velocity.y,$player.rotation)
 
 func _physics_process(delta):
 	get_input()

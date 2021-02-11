@@ -13,14 +13,6 @@ visible = false
 [node name="Map2" parent="." instance=ExtResource( 3 )]
 visible = false
 
-<<<<<<< Updated upstream
-[node name="playTimer" type="Timer" parent="."]
-wait_time = 30.0
-[connection signal="pressed" from="GUI/Play" to="." method="_on_Play_pressed"]
-[connection signal="pressed" from="GUI/create_party" to="." method="_on_create_party_pressed"]
-[connection signal="pressed" from="GUI/join_party" to="." method="_on_join_party_pressed"]
-=======
 [node name="GUI" parent="." instance=ExtResource( 2 )]
->>>>>>> Stashed changes
 
 [editable path="GUI"]

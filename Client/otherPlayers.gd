@@ -4,8 +4,9 @@ var id = null
 var speed = 150
 var velocity = Vector2()
 var target = Vector2()
+
 #export var weapons = ["flashlight", "handgun", "knife", "rifle", "shotgun"]
-export var weapons = {"handgun":false, "knife":false}
+export var weapons = ["handgun", "knife"]
 signal keyPress(key)
 #melee, knife, rifle, shotgun, handgun
 
@@ -19,17 +20,12 @@ var knife = load("res://assets/sfx/knife.wav")
 var reload = load("res://assets/sfx/reload.wav")
 var hit = load("res://assets/sfx/hit.wav")
 
-func init(ID,x,y):
+func init(ID):
 	id = ID
 	position.x = 0
 	position.y = 0
 
-func set_type(type):
-	weapons[type] = true
-	$player.play(type+"_idle")
-
-func move(x,y,vx,vy,rot):
-	velocity = Vector2(vx,vy)
+func move(x,y,rot):
 	target = Vector2(x,y)
 	$player.rotation = rot
 
@@ -37,9 +33,8 @@ func hit_sfx():
 	$sfx.set_stream(hit)
 
 func _physics_process(delta):
+	velocity = position.direction_to(target) * speed
 	if position.distance_to(target) > 5:
-		position = target
-	elif velocity.length() > 1:
 		velocity = move_and_slide(velocity)
 		$player/feet.play("walk")
 	else:
