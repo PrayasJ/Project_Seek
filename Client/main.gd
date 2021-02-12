@@ -72,15 +72,6 @@ func _moveplayer(x,y,rot):
 		_client.get_peer(1).put_packet(data)
 
 
-func _on_Play_pressed():
-	if len($GUI/players.text) > 0:
-		var data = JSON.print({"action":"play","pID":pID,"party":"1",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
-		_client.get_peer(1).put_packet(data)
-	else:
-		var data = JSON.print({"action":"play","pID":pID,"party":"0",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
-		_client.get_peer(1).put_packet(data)
-
-
 func _on_create_party_pressed():
 	var rng = RandomNumberGenerator.new()
 	rng.randomize()
@@ -106,3 +97,12 @@ func _on_join_party_pressed():
 	$GUI/created_party_code.show()
 	$GUI/create_party.hide()
 	$GUI/Play.hide()
+
+
+func _on_play_pressed():
+	if len($GUI/players.text) > 0:
+		var data = JSON.print({"action":"play","pID":pID,"party":"1",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
+		_client.get_peer(1).put_packet(data)
+	else:
+		var data = JSON.print({"action":"play","pID":pID,"party":"0",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
+		_client.get_peer(1).put_packet(data)
