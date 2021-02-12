@@ -41,36 +41,68 @@ func _on_data():
 		add_child(players[data['ID']])
 		print("New User added")
 	if data["action"] == "move":
-		players[data['pID']].move(data['x'],data['y'],data['rot'])
+		if data['pID'] == pID:
+			player.move(data['x'],data['y'],data['vx'],data['vy'],data['rot'])
+		else:
+			players[data['pID']].move(data['x'],data['y'],data['vx'],data['vy'],data['rot'])
 	if data['action'] == "joined_room":
 		players[data['joined_room']] = otherPlayers.instance()
-		players[data['joined_room']].init(data['joined_room'])
+		players[data['joined_room']].init(data['joined_room'],0,0)
 		add_child(players[data['joined_room']])
 	if data['action'] == "in_room":
 		players[data['in_room']] = otherPlayers.instance()
-		players[data['in_room']].init(data['in_room'])
+		players[data['in_room']].init(data['in_room'],0, 0)
 		add_child(players[data['in_room']])
 	if data['action'] == 'joined_party':
 		$GUI/players.text += '\n'+data['joined_party']
 	if data['action'] == 'join_error':
-		pass
-	if data['action'] == 'entered_room':
+		pass #do something you filthy shit
+	if data['action'] == 'ids':
 		$Map1.show()
 		$GUI.hide()
-		player = Player.instance()
 		add_child(player)
-		add_child(otherPlayers.instance())
+		player.set_type('knife' if data[pID][0] == '0' else 'handgun')
+		player.init(pID,get_node("Map1/pos_"+data[pID]).position.x,get_node("Map1/pos_"+data[pID]).position.y)
+		#player.init(pID,0,0)
+		for ids in data:
+			if ids != pID  and ids != 'action' and ids[3] != '_':
+				print(ids+" joined for no reason")
+				players[ids].set_type('knife' if data[ids][0] == '0' else 'handgun')
+				players[ids].init(ids,get_node("Map1/pos_"+data[ids]).position.x,get_node("Map1/pos_"+data[ids]).position.y)
+				#players[ids].init(ids,0,0)
+	if data['action'] == 'entered_room':
+		player = Player.instance()
 		player.connect("moveplayer", self, "_moveplayer")
-		player.init(pID,$Map1/pos_1_1.position.x,$Map1/pos_1_1.position.y)
+		player.connect("shoot", self, "_shoot")
+		player.connect("knife", self, "_knife")
 func _process(delta):
 	_client.poll()
 
-func _moveplayer(x,y,rot):
+func _moveplayer(x,y,vx,vy,rot):
 	var playerID = player.getID()
 	if playerID != null:
-		var data = JSON.print({"action":"move","pID":playerID,'x':x, 'y':y, 'rot':rot}).to_utf8()
+		var data = JSON.print({"action":"move","pID":playerID,'x':x, 'y':y,'vx':vx, 'vy':vy, 'rot':rot}).to_utf8()
 		_client.get_peer(1).put_packet(data)
 
+func _shoot(x,y,rot):
+	var playerID = player.getID()
+	if playerID != null:
+		var data = JSON.print({"action":"bullet","pID":playerID,'x':x, 'y':y, 'rot':rot}).to_utf8()
+		_client.get_peer(1).put_packet(data)
+
+func _knife(x,y,rot):
+	var playerID = player.getID()
+	if playerID != null:
+		var data = JSON.print({"action":"knife","pID":playerID,'x':x, 'y':y, 'rot':rot}).to_utf8()
+		_client.get_peer(1).put_packet(data)
+
+func _on_play_pressed():
+	if len($GUI/players.text) > 0:
+		var data = JSON.print({"action":"play","pID":pID,"party":"1",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
+		_client.get_peer(1).put_packet(data)
+	else:
+		var data = JSON.print({"action":"play","pID":pID,"party":"0",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
+		_client.get_peer(1).put_packet(data)
 
 func _on_create_party_pressed():
 	var rng = RandomNumberGenerator.new()
@@ -97,12 +129,3 @@ func _on_join_party_pressed():
 	$GUI/created_party_code.show()
 	$GUI/create_party.hide()
 	$GUI/Play.hide()
-
-
-func _on_play_pressed():
-	if len($GUI/players.text) > 0:
-		var data = JSON.print({"action":"play","pID":pID,"party":"1",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
-		_client.get_peer(1).put_packet(data)
-	else:
-		var data = JSON.print({"action":"play","pID":pID,"party":"0",'x':0, 'y':0, 'rot':0,'code':code}).to_utf8()
-		_client.get_peer(1).put_packet(data)
