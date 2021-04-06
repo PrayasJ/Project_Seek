@@ -4,7 +4,7 @@ var Player = preload("res://Character.tscn")
 var otherPlayers = preload("res://otherPlayers.tscn")
 var player = null
 # The URL we will connect to
-export var websocket_url = "ws://127.0.0.1:6789"
+export var websocket_url = "ws://localhost:6789"
 var players = {}
 var pID = null
 # Our WebSocketClient instance
@@ -16,14 +16,21 @@ func _ready():
 	_client.connect("connection_error", self, "_closed")
 	_client.connect("connection_established", self, "_connected")
 	_client.connect("data_received", self, "_on_data")
+	$login.connect("login",self,"_on_login")
 	var err = _client.connect_to_url(websocket_url)
 	if err != OK:
 		print("Unable to connect")
 		set_process(false)
+	OS.set_window_size(Vector2(960,540))
+
+func _on_login(user,passw):
+	var data = JSON.print({"action":"login","username":user,"password":passw}).to_utf8()
+	_client.get_peer(1).put_packet(data)
 
 func _closed(was_clean = false):
 	print("Closed, clean: ", was_clean)
 	set_process(false)
+	get_tree().quit()
 
 func _connected(proto = ""):
 	var jdat = {'action': 'join'}
@@ -58,6 +65,7 @@ func _on_data():
 	if data['action'] == 'join_error':
 		pass #do something you filthy shit
 	if data['action'] == 'ids':
+		print(data)
 		$Map1.show()
 		$GUI.hide()
 		add_child(player)
@@ -71,10 +79,28 @@ func _on_data():
 				players[ids].init(ids,get_node("Map1/pos_"+data[ids]).position.x,get_node("Map1/pos_"+data[ids]).position.y)
 				#players[ids].init(ids,0,0)
 	if data['action'] == 'entered_room':
+		print(data)
 		player = Player.instance()
 		player.connect("moveplayer", self, "_moveplayer")
 		player.connect("shoot", self, "_shoot")
 		player.connect("knife", self, "_knife")
+	if data['action'] == 'killed':
+		remove_child(player)
+		for p in players: players[p].queue_free()
+		players = {}
+		#player.call_deferred("free")
+		$Map1.hide()
+		$GUI.show()
+	if data['action'] == 'user_died':
+		players[data['pid']].queue_free()
+		players.erase(data['pid'])
+	if data['action'] == 'afk':
+		players[data['pid']].queue_free()
+		players.erase(data['pid'])
+	if data['action'] == 'login':
+		print(data)
+		if data['state'] == 'found':
+			$login.hide()
 func _process(delta):
 	_client.poll()
 
@@ -84,17 +110,26 @@ func _moveplayer(x,y,vx,vy,rot):
 		var data = JSON.print({"action":"move","pID":playerID,'x':x, 'y':y,'vx':vx, 'vy':vy, 'rot':rot}).to_utf8()
 		_client.get_peer(1).put_packet(data)
 
-func _shoot(x,y,rot):
+func _shoot(ray):
 	var playerID = player.getID()
-	if playerID != null:
-		var data = JSON.print({"action":"bullet","pID":playerID,'x':x, 'y':y, 'rot':rot}).to_utf8()
+	var other = null
+	for i in players: if players[i] == ray: other = i
+	if playerID != null and other !=null:
+		print(playerID+" hit "+other)
+		var data = JSON.print({"action":"bullet","pID":playerID,'hit':other}).to_utf8()
 		_client.get_peer(1).put_packet(data)
 
-func _knife(x,y,rot):
+func _knife(ray):
 	var playerID = player.getID()
-	if playerID != null:
-		var data = JSON.print({"action":"knife","pID":playerID,'x':x, 'y':y, 'rot':rot}).to_utf8()
-		_client.get_peer(1).put_packet(data)
+	var other = null
+	for i in players: if players[i] == ray: other = i
+	if playerID != null and other != null:
+		var p1pos = player.getpos()
+		var p2pos = players[other].getpos()
+		if p1pos.distance_to(p2pos) < 40:
+			print(playerID+" hit "+other)
+			var data = JSON.print({"action":"knife","pID":playerID,'hit':other}).to_utf8()
+			_client.get_peer(1).put_packet(data)
 
 func _on_play_pressed():
 	if len($GUI/players.text) > 0:

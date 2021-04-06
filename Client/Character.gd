@@ -3,15 +3,14 @@ extends KinematicBody2D
 var id = null
 var speed = 150
 var velocity = Vector2()
-
+var state = false
 #export var weapons = ["flashlight", "handgun", "knife", "rifle", "shotgun"]
 export var weapons = {"handgun":false, "knife":false}
 signal moveplayer(x,y,vx,vy,rot)
-signal shoot(x,y,rot)
-signal knife(x,y,rot)
+signal shoot(ray)
+signal knife(ray)
 #melee, knife, rifle, shotgun, handgun
 var target = Vector2()
-
 var melee = load("res://assets/sfx/melee.wav")
 var run = load("res://assets/sfx/run.wav")
 var walk = load("res://assets/sfx/footstep.wav")
@@ -30,9 +29,13 @@ func init(ID,x,y):
 func set_type(type):
 	weapons[type] = true
 	$player.play(type+"_idle")
+	$player.connect("animation_finished",$player,"play",[type+'_idle'])
 
 func getID():
 	return id
+
+func getpos():
+	return position
 
 func getx():
 	return position.x
@@ -76,19 +79,22 @@ func get_input():
 		velocity = Vector2(speed, 0).rotated($player.rotation)
 		if $player/feet.animation != "walk":
 			$player/feet.play("walk")
-	if Input.is_action_pressed('shoot') and weapons['handgun']:
-		$player.play("handgun_shoot")
-		emit_signal("shoot",position.x,position.y,$player.rotation)
-	elif weapons['handgun']:
-		$player.play("handgun_idle")
-	if Input.is_action_pressed('knife') and weapons['knife']:
-		$player.play("knife_melee")
-		emit_signal("shoot",position.x,position.y,$player.rotation)
-	elif weapons['knife']:
-		$player.play("knife_idle")
+	
+	if weapons['handgun']:
+		if Input.is_action_just_pressed("shoot"):
+			$player.play("handgun_shoot")
+			emit_signal("shoot",$RayCast2D.get_collider())
+			
+
+	if weapons['knife']:
+		if Input.is_action_just_pressed('shoot'):
+			$player.play("knife_melee")
+			emit_signal("knife",$RayCast2D.get_collider())
+
 	if velocity == Vector2():
 		$player/feet.play("idle")
 	$CollisionShape2D.rotation_degrees = $player.rotation_degrees - 90
+	$RayCast2D.rotation_degrees = $player.rotation_degrees
 	velocity = velocity.normalized() * speed
 	emit_signal("moveplayer",position.x,position.y,velocity.x,velocity.y,$player.rotation)
 

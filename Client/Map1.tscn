@@ -2566,6 +2566,7 @@ radius = 18.1595
 [node name="Map1" type="Node2D"]
 
 [node name="ansh" type="TileMap" parent="."]
+visible = false
 scale = Vector2( 0.25, 0.25 )
 tile_set = SubResource( 1 )
 cell_size = Vector2( 345, 345 )
@@ -2659,7 +2660,7 @@ gravity_scale = 0.0
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="firecamp"]
 frames = SubResource( 86 )
-frame = 4
+frame = 5
 playing = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="firecamp"]

@@ -24,6 +24,9 @@ func init(ID,x,y):
 	position.x = 0
 	position.y = 0
 
+func getpos():
+	return position
+
 func set_type(type):
 	weapons[type] = true
 	$player.play(type+"_idle")

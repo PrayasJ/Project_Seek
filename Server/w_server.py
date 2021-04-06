@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.windows_events import NULL
 import json
 import logging
 import websockets
@@ -92,7 +93,9 @@ async def look_callback():
                 print(data,key,ppl,r)
                 data[key] = ppl[r]
                 ppl.pop(r)
+            else: rooms[avb][key] = nr
     message = json.dumps(data)
+    print(users)
     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
 
 def look():
@@ -110,9 +113,10 @@ async def register(ws, message):
             t = threading.Thread(target=look)
             threads.append(t)
             t.start()
+            print('A')
         if rooms[avb]["participants"] < nr:
             pID = data["pID"]
-            rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
+            rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0","health":"100"}
             rooms[avb]["participants"] = rooms[avb]["participants"] + 1
             cong = {"action": "entered_room"}
             cong = json.dumps(cong)
@@ -120,6 +124,7 @@ async def register(ws, message):
             message = {"action": "joined_room", "joined_room": pID}
             message = json.dumps(message)
             users = []
+            print('N')
             if rooms[avb]["participants"] > 1:
                 for key in rooms[avb].keys():
                     if key != "participants" and key != pID:
@@ -135,8 +140,10 @@ async def register(ws, message):
             t.start()
             pID = data["pID"]
             rooms[avb] = dict()
-            rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
+            print('S')
+            rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0","health":"100"}
             rooms[avb]["participants"] = 1
+            print(rooms)
             cong = {"action": "entered_room"}
             cong = json.dumps(cong)
             await ws.send(cong)
@@ -144,10 +151,11 @@ async def register(ws, message):
         code = data["code"]
         p = parties[code]["participants"]
         if rooms[avb]["participants"] <= nr - p:
+            print('H')
             for i in range(p):
                 pID = parties[code]["pID"+str(i+1)]
                 ws = parties[code]["p"+str(i+1)]
-                rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
+                rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0","health":"100"}
                 rooms[avb]["participants"] = rooms[avb]["participants"] + 1
                 cong = {"action": "entered_room"}
                 cong = json.dumps(cong)
@@ -170,11 +178,12 @@ async def register(ws, message):
             threads.append(t)
             t.start()
             rooms[avb] = dict()
+            print('UJJAWAL')
             rooms[avb]['participants'] = 0 
             for i in range(p):
                 pID = parties[code]["pID"+str(i+1)]
                 ws = parties[code]["p"+str(i+1)]
-                rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0"}
+                rooms[avb][pID] = {"ws": ws, "x": "0", "y": "0", "rot": "0","health":"100"}
                 rooms[avb]["participants"] = rooms[avb]["participants"] + 1
                 cong = {"action": "entered_room"}
                 cong = json.dumps(cong)
@@ -191,29 +200,82 @@ async def register(ws, message):
                     await asyncio.wait([all_user[user]['ws'].send(message) for user in all_user if user in users])
 
 async def move_state(data):
-    id = data['pID']
+    pid = data['pID']
     data = json.dumps(data)
+    tr = None
+    for room in rooms:
+        if pid in rooms[room]:
+            tr = room
     if len(all_user) > 1:  # asyncio.wait doesn't accept an empty list
-        await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user])
+        await asyncio.wait([all_user[user]['ws'].send(data) for user in rooms[tr] if user != 'participants'])
 
 async def bullet(data):
-    id = data['pID']
+    user = data['pID']
+    hit = data['hit']
+    tr = None
     data = json.dumps(data)
-    if len(all_user) > 1:  # asyncio.wait doesn't accept an empty list
-        await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user if user != id])
+    for room in rooms:
+        if hit in rooms[room]:
+            tr = room
+    data = {'action':'killed','by':user}
+    data = json.dumps(data)
+    await all_user[hit]['ws'].send(data)
+    del rooms[tr][hit]
+    #rooms[tr]['participants'] -= 1
+    if len(rooms[tr])>1:
+        data = {"action": "user_died", "pid": hit}
+        data = json.dumps(data)
+        await asyncio.wait([all_user[u]['ws'].send(data) for u in rooms[tr] if u != 'participants'])
 
 async def knife(data):
-    id = data['pID']
+    user = data['pID']
+    hit = data['hit']
+    tr = None
     data = json.dumps(data)
-    if len(all_user) > 1:  # asyncio.wait doesn't accept an empty list
-        await asyncio.wait([all_user[user]['ws'].send(data) for user in all_user if user != id])
+    for room in rooms:
+        if hit in rooms[room]:
+            tr = room
+    data = {'action':'killed','by':user}
+    data = json.dumps(data)
+    await all_user[hit]['ws'].send(data)
+    del rooms[tr][hit]
+    #rooms[tr]['participants'] -= 1
+    if len(rooms[tr])>1:
+        data = {"action": "user_died", "pid": hit}
+        data = json.dumps(data)
+        await asyncio.wait([all_user[u]['ws'].send(data) for u in rooms[tr] if u != 'participants'])
+
 
 async def unregister(websocket):
-    [all_user.remove(user) for user in all_user if user[1] == websocket]
+    u,tr = None, None
+    for user in all_user:
+        if all_user[user]['ws'] == websocket:
+            u = user
+            break
+    for r in rooms:
+        if u in rooms[r]:
+            tr = r
+            break
+    if tr != None:
+        del rooms[tr][u]
+        #rooms[tr]['participants'] -= 1
+        if len(rooms[tr])>1:
+            data = {"action": "afk", "pid": u}
+            data = json.dumps(data)
+            await asyncio.wait([all_user[user]['ws'].send(data) for user in rooms[tr] if user != 'participants'])
+    del all_user[u]
+
+async def login_verify(data, ws):
+    db = firestore_db.collection('users')
+    matched_user = db.where('username','==',data['username'])
+    matched_id = list(matched_user.where('password','==',data['password']).stream())
+    data = {"action": "login", "state": 'found' if len(matched_id)==1 else 'failed'}
+    data = json.dumps(data)
+    await ws.send(data)
 
 async def counter(websocket, path):
     pID = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-    all_user[pID]= {"ws":websocket,"x":"0","y":"0"}
+    all_user[pID]= {"ws":websocket,"x":"0","y":"0","health":"100"}
     data = {"action": "sent_pID", "pID": pID}
     data = json.dumps(data)
     await websocket.send(data)
@@ -234,6 +296,8 @@ async def counter(websocket, path):
                 await bullet(data)
             elif data["action"] == "knife":
                 await knife(data)
+            elif data["action"] == 'login':
+                await login_verify(data, websocket)
             else:
                 logging.error("unsupported event: {}", data)
     finally:
@@ -272,17 +336,17 @@ class routing(http.server.SimpleHTTPRequestHandler):
         return
 
 handler_object = routing
-my_server = socketserver.TCPServer(("", 9898), handler_object)
+auth_serv = socketserver.TCPServer(("", 9898), handler_object)
 
 def routes_thread():
-    my_server.serve_forever()
-    asyncio.get_event_loop().run_until_complete(my_server)
+    auth_serv.serve_forever()
+    asyncio.get_event_loop().run_until_complete(auth_serv)
     second_loop = asyncio.new_event_loop()
     execute_polling_coroutines_forever(second_loop)
     return
 
 threading.Thread(target=routes_thread).start()
 
-start_server = websockets.serve(counter, "localhost", 6789)
-asyncio.get_event_loop().run_until_complete(start_server)
+game_serv = websockets.serve(counter, "localhost", 6789)
+asyncio.get_event_loop().run_until_complete(game_serv)
 asyncio.get_event_loop().run_forever()
