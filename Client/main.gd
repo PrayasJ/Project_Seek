@@ -4,7 +4,7 @@ var Player = preload("res://Character.tscn")
 var otherPlayers = preload("res://otherPlayers.tscn")
 var player = null
 # The URL we will connect to
-export var websocket_url = "ws://localhost:6789"
+export var websocket_url = "wss://project-seek.herokuapp.com"
 var players = {}
 var pID = null
 # Our WebSocketClient instance
