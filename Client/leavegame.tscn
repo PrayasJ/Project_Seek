@@ -1,0 +1,120 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://assets/leave game/die bttn.png" type="Texture" id=1]
+[ext_resource path="res://assets/leave game/support bttn.png" type="Texture" id=2]
+[ext_resource path="res://assets/leave game/main dull bg.png" type="Texture" id=3]
+[ext_resource path="res://assets/leave game/bg leave game.png" type="Texture" id=4]
+[ext_resource path="res://leavegame.gd" type="Script" id=5]
+[ext_resource path="res://assets/newgui/Rectangle 7.png" type="Texture" id=7]
+[ext_resource path="res://assets/New folder/tick 1.png" type="Texture" id=9]
+[ext_resource path="res://assets/New folder/View Map.png" type="Texture" id=10]
+[ext_resource path="res://assets/New folder/error 1.png" type="Texture" id=11]
+[ext_resource path="res://assets/New folder/Leave Game.png" type="Texture" id=14]
+[ext_resource path="res://assets/New folder/Joypad.png" type="Texture" id=15]
+[ext_resource path="res://assets/New folder/Settings.png" type="Texture" id=16]
+
+[node name="GUI" type="Node2D"]
+pause_mode = 2
+script = ExtResource( 5 )
+
+[node name="main bg" type="Sprite" parent="."]
+use_parent_material = true
+texture = ExtResource( 7 )
+centered = false
+
+[node name="dull layer" type="Sprite" parent="."]
+use_parent_material = true
+texture = ExtResource( 3 )
+centered = false
+
+[node name="reconsider letter" type="Sprite" parent="."]
+use_parent_material = true
+texture = ExtResource( 4 )
+centered = false
+
+[node name="settings" type="Sprite" parent="."]
+use_parent_material = true
+position = Vector2( 943.524, 63.4656 )
+texture = ExtResource( 16 )
+
+[node name="yes bttn" type="TextureButton" parent="."]
+use_parent_material = true
+margin_left = 1329.0
+margin_top = 762.0
+margin_right = 40.0
+margin_bottom = 40.0
+texture_normal = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="no bttn" type="TextureButton" parent="."]
+use_parent_material = true
+margin_left = 683.0
+margin_top = 762.0
+margin_right = 40.0
+margin_bottom = 40.0
+texture_normal = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="close" type="TextureButton" parent="."]
+use_parent_material = true
+margin_left = 75.9197
+margin_top = 38.8535
+margin_right = 139.92
+margin_bottom = 102.853
+texture_normal = ExtResource( 11 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="apply" type="TextureButton" parent="."]
+use_parent_material = true
+margin_left = 1770.39
+margin_top = 39.7517
+margin_right = 1834.39
+margin_bottom = 103.752
+texture_normal = ExtResource( 9 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="map" type="TextureButton" parent="."]
+use_parent_material = true
+margin_left = 349.25
+margin_top = 981.458
+margin_right = 593.25
+margin_bottom = 1021.46
+texture_normal = ExtResource( 10 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="joypad" type="TextureButton" parent="."]
+use_parent_material = true
+margin_left = 878.987
+margin_top = 975.758
+margin_right = 1060.99
+margin_bottom = 1015.76
+texture_normal = ExtResource( 15 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="leave" type="TextureButton" parent="."]
+use_parent_material = true
+margin_left = 1294.3
+margin_top = 980.485
+margin_right = 1595.3
+margin_bottom = 1020.49
+texture_normal = ExtResource( 14 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+[connection signal="pressed" from="yes bttn" to="." method="_on_yes_bttn_pressed"]
+[connection signal="pressed" from="no bttn" to="." method="_on_no_bttn_pressed"]
+[connection signal="pressed" from="apply" to="." method="_on_apply_pressed"]
+[connection signal="pressed" from="joypad" to="." method="_on_joypad_pressed"]
+[connection signal="pressed" from="leave" to="." method="_on_leave_pressed"]

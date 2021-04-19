@@ -4,6 +4,7 @@ var id = null
 var speed = 150
 var velocity = Vector2()
 var target = Vector2()
+var username = null
 #export var weapons = ["flashlight", "handgun", "knife", "rifle", "shotgun"]
 export var weapons = {"handgun":false, "knife":false}
 signal keyPress(key)
@@ -19,10 +20,14 @@ var knife = load("res://assets/sfx/knife.wav")
 var reload = load("res://assets/sfx/reload.wav")
 var hit = load("res://assets/sfx/hit.wav")
 
-func init(ID,x,y):
+func init(ID,x,y, user):
+	username = user
+	if len(user)>8: $username.text = user.left(8)+'...'
+	else: $username.text = user
 	id = ID
 	position.x = 0
 	position.y = 0
+	$player.set_material(null)
 
 func getpos():
 	return position
